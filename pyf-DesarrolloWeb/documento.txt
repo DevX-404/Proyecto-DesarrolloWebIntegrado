@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 Cambio hecho por Ximena 
+=======
+Cambio hecho por ximena 
+>>>>>>> desarrolloweb
