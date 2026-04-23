@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 cambio hecho por mi (Ximena) 
+=======
+cambio hecho por sophia
+>>>>>>> desarrollo
