@@ -37,7 +37,7 @@ public class CitaMedica {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "medico_id", nullable = false)
     @NotNull(message = "El médico es obligatorio")
-    private Medico medico; // Asociación profesional
+    private Medico medico;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "paciente_id", nullable = false)
