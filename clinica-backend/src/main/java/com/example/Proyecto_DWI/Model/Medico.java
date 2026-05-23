@@ -1,7 +1,10 @@
 package com.example.Proyecto_DWI.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,7 +23,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class Medico {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -36,10 +39,14 @@ public class Medico {
 
     @NotBlank(message = "El CMP es obligatorio")
     @Column(unique = true, length = 10)
-    private String cmp; // Colegiatura Médica
+    private String cmp; 
 
     @Email(message = "El formato del email no es correcto")
     private String email;
-    
+
     private boolean activo = true;
+
+    @OneToOne(mappedBy = "medico", fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("medico")
+    private Usuario usuario;
 }

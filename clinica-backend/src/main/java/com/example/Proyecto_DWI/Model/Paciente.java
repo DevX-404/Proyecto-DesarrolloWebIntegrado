@@ -34,23 +34,24 @@ public class Paciente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Nombre es obligatorio")
+    @NotNull(message = "Se requiere nombre")
     @Column(nullable = false, length = 100)
     private String nombre;
 
-    @NotBlank(message = "Apellido es obligatorio")
+    @NotNull(message = "Se requiere apellido")
     @Column(nullable = false, length = 100)
     private String apellido;
 
-    @NotBlank(message = "DNI es obligatorio")
+    @NotNull(message = "DNI es obligatorio")
     @Pattern(regexp = "\\d{8}", message = "El DNI debe ser exactamente 8 números")
     @Column(nullable = false, unique = true, length = 8)
     private String dni;
 
+    @NotNull(message = "Se requiere el telefono")
     @Pattern(regexp = "^(9\\d{8})?$", message = "El teléfono debe empezar con 9 y tener 9 dígitos o quedar vacío")
     private String telefono;
 
-    @NotBlank(message = "El email es obligatorio")
+    @NotNull(message = "El email es obligatorio")
     @Email(message = "Email no tiene formato correcto")
     @Column(unique = true)
     private String email;
@@ -61,6 +62,7 @@ public class Paciente {
     @Column(name = "fecha_nacimiento")
     private LocalDate fechaNacimiento;
 
+    @NotNull(message = "La fecha de alta es obligatoria")
     @Column(name = "fecha_registro", updatable = false)
     private LocalDate fechaRegistro;
 
