@@ -47,7 +47,7 @@ public class CitaMedica {
     @NotNull(message = "La fecha y hora es obligatorias")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     @Column(name = "fecha_hora", nullable = false)
-    private LocalDateTime fechaHora;
+    private LocalDateTime fechaCita;
 
     @NotNull(message = "El motivo es obligatorio")
     @Column(nullable = false, length = 255)

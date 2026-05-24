@@ -1,107 +1,57 @@
 package com.example.Proyecto_DWI.Controller;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import com.example.Proyecto_DWI.Model.Paciente;
 import com.example.Proyecto_DWI.Service.PacienteService;
-
-import org.springframework.ui.Model;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
-@RequestMapping("/pacientes")
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/pacientes")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200")
 public class PacienteController {
 
     private final PacienteService pacienteService;
 
-    public PacienteController(PacienteService pacienteService) {
-        this.pacienteService = pacienteService;
-    }
-
+    // Listar todos los pacientes
     @GetMapping
-    public String listar(@RequestParam(required = false) String nombre, Model model) {
-        if (nombre != null && !nombre.isBlank()) {
-            model.addAttribute("pacientes", pacienteService.buscarPorNombre(nombre));
-            model.addAttribute("busqueda", nombre);
-        } else {
-            model.addAttribute("pacientes", pacienteService.listarTodos());
-        }
-        return "pacientes/lista"; 
+    public ResponseEntity<List<Paciente>> listarTodos() {
+        return ResponseEntity.ok(pacienteService.listarTodos());
     }
 
-    @GetMapping("/nuevo")
-    public String mostrarFormularioNuevo(Model model) {
-        model.addAttribute("paciente", new Paciente()); 
-        model.addAttribute("titulo", "Nuevo Paciente");
-        model.addAttribute("esNuevo", true);
-        return "pacientes/formulario";
+    // Obtener un paciente por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Paciente> obtenerPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(pacienteService.buscarPorId(id));
     }
 
-    @GetMapping("/editar/{id}")
-    public String mostrarFormularioEditar(@PathVariable Long id, Model model) {
-        try {
-            model.addAttribute("paciente", pacienteService.buscarPorId(id));
-            model.addAttribute("titulo", "Editar Paciente");
-            model.addAttribute("esNuevo", false);
-        } catch (EntityNotFoundException e) {
-            return "redirect:/pacientes";
-        }
-        return "pacientes/formulario";
+    // Registrar un nuevo paciente (Uso de jakarta.validation)
+    @PostMapping
+    public ResponseEntity<Paciente> registrar(@Valid @RequestBody Paciente paciente) {
+        Paciente nuevoPaciente = pacienteService.guardar(paciente);
+        return new ResponseEntity<>(nuevoPaciente, HttpStatus.CREATED);
     }
 
-    @PostMapping("/guardar")
-    public String guardar(@Valid @ModelAttribute("paciente") Paciente paciente, BindingResult result, Model model,
-            RedirectAttributes flash) {
-        if (result.hasErrors()) {
-            model.addAttribute("titulo", paciente.getId() == null ? "Nuevo Paciente" : "Editar Paciente");
-            return "pacientes/formulario";
-        }
-        try {
-            if (paciente.getId() == null) {
-                pacienteService.registrar(paciente);
-                flash.addFlashAttribute("mensajeExito", "Paciente registrado correctamente.");
-            } else {
-                pacienteService.actualizar(paciente.getId(), paciente);
-                flash.addFlashAttribute("mensajeExito", "Paciente actualizado correctamente.");
-            }
-        } catch (Exception e) {
-            model.addAttribute("mensajeError", "Error: " + e.getMessage());
-            model.addAttribute("titulo", paciente.getId() == null ? "Nuevo Paciente" : "Editar Paciente");
-            return "pacientes/formulario";
-        }
-        return "redirect:/pacientes";
+    // Editar un paciente existente
+    @PutMapping("/{id}")
+    public ResponseEntity<Paciente> editar(@PathVariable Long id, @Valid @RequestBody Paciente paciente) {
+        Paciente actualizado = pacienteService.actualizar(id, paciente);
+        return ResponseEntity.ok(actualizado);
     }
 
-    @GetMapping("/eliminar/{id}")
-    public String eliminar(@PathVariable Long id, RedirectAttributes flash) {
-        try {
-            pacienteService.eliminarLogico(id);
-            flash.addFlashAttribute("mensajeExito", "Paciente eliminado.");
-        } catch (Exception e) {
-            flash.addFlashAttribute("mensajeError", "No se pudo eliminar el paciente.");
-        }
-        return "redirect:/pacientes";
-    }
-
-    @GetMapping("/papelera")
-    public String verPapelera(Model model) {
-        model.addAttribute("pacientes", pacienteService.listarEliminados());
-        return "pacientes/papelera";
-    }
-
-    @GetMapping("/restaurar/{id}")
-    public String restaurar(@PathVariable Long id, RedirectAttributes flash) {
-        pacienteService.restaurar(id);
-        flash.addFlashAttribute("mensajeExito", "Paciente restaurado.");
-        return "redirect:/pacientes";
+    // Eliminar un paciente
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> eliminar(@PathVariable Long id) {
+        pacienteService.eliminar(id);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Paciente eliminado correctamente");
+        return ResponseEntity.ok(response);
     }
 }

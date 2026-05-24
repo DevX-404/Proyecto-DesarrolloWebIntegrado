@@ -1,120 +1,61 @@
 package com.example.Proyecto_DWI.Controller;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import org.springframework.ui.Model;
 import com.example.Proyecto_DWI.Model.CitaMedica;
 import com.example.Proyecto_DWI.Service.CitaMedicaService;
-import com.example.Proyecto_DWI.Service.PacienteService;
-import com.example.Proyecto_DWI.Service.MedicoService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
-@RequestMapping("/citas")
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/citas")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200")
 public class CitaMedicaController {
 
-    private final CitaMedicaService citaService;
-    private final PacienteService pacienteService;
-    private final MedicoService medicoService;
-
-    public CitaMedicaController(CitaMedicaService citaService, PacienteService pacienteService,
-            MedicoService medicoService) {
-        this.medicoService = medicoService;
-        this.citaService = citaService;
-        this.pacienteService = pacienteService;
-    }
+    private final CitaMedicaService citaMedicaService;
 
     @GetMapping
-    public String listar(Model model) {
-        model.addAttribute("citas", citaService.listarTodas());
-        return "citas/lista";
+    public ResponseEntity<List<CitaMedica>> listarTodas() {
+        return ResponseEntity.ok(citaMedicaService.listarTodas());
     }
 
-    @GetMapping("/nueva")
-    public String mostrarFormulario(@RequestParam(required = false) Long pacienteId, Model model) {
-        model.addAttribute("cita", new CitaMedica());
-        model.addAttribute("pacientes", pacienteService.listarTodos());
-        model.addAttribute("medicos", medicoService.listarActivos());
-
-        model.addAttribute("pacientePreId", pacienteId);
-        return "citas/formulario";
+    @GetMapping("/{id}")
+    public ResponseEntity<CitaMedica> obtenerPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(citaMedicaService.buscarPorId(id));
     }
 
-    @PostMapping("/guardar")
-    public String guardar(@RequestParam(required = false) Long pacienteId,
-            @RequestParam(required = false) Long medicoId,
-            @ModelAttribute("cita") CitaMedica cita, 
-            BindingResult result,
-            Model model,
-            RedirectAttributes flash) {
-
-        // 1. Validaciones manuales básicas
-        if (pacienteId == null)
-            result.rejectValue("paciente", "error", "El paciente es obligatorio");
-        if (medicoId == null)
-            result.rejectValue("medico", "error", "El médico es obligatorio");
-        if (cita.getMotivo() == null || cita.getMotivo().isBlank())
-            result.rejectValue("motivo", "error", "El motivo es obligatorio");
-
-        // 2. Validación de fecha manual 
-        if (cita.getFechaHora() == null) {
-            result.rejectValue("fechaHora", "error", "La fecha y hora son obligatorias");
-        } else if (cita.getFechaHora().isBefore(java.time.LocalDateTime.now())) {
-            result.rejectValue("fechaHora", "error", "No se puede agendar citas en el pasado."); 
+    @PostMapping
+    public ResponseEntity<?> crearCita(@Valid @RequestBody CitaMedica cita) {
+        // REQUISITO: Validar disponibilidad básica antes de registrar en la BD
+        boolean disponible = citaMedicaService.validarDisponibilidad(cita.getMedico().getId(), cita.getFechaCita());
+        if (!disponible) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "El médico seleccionado no cuenta con disponibilidad en la fecha u hora indicada.");
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
-
-        if (result.hasErrors()) {
-            prepararModeloFormulario(model, pacienteId, medicoId);
-            return "citas/formulario";
-        }
-
-        try {
-            citaService.registrar(pacienteId, medicoId, cita);
-            flash.addFlashAttribute("mensajeExito", "Cita registrada correctamente.");
-            return "redirect:/citas";
-        } catch (IllegalArgumentException e) {
-            result.rejectValue("medico", "error", e.getMessage());
-            prepararModeloFormulario(model, pacienteId, medicoId);
-            return "citas/formulario";
-        }
+        
+        CitaMedica nuevaCita = citaMedicaService.guardar(cita);
+        return new ResponseEntity<>(nuevaCita, HttpStatus.CREATED);
     }
 
-    private void prepararModeloFormulario(Model model, Long pId, Long mId) {
-        model.addAttribute("pacientes", pacienteService.listarTodos());
-        model.addAttribute("medicos", medicoService.listarActivos());
-        model.addAttribute("pacientePreId", pId); 
-        model.addAttribute("medicoPreId", mId); 
+    @PutMapping("/{id}")
+    public ResponseEntity<CitaMedica> actualizarCita(@PathVariable Long id, @Valid @RequestBody CitaMedica cita) {
+        CitaMedica actualizada = citaMedicaService.actualizar(id, cita);
+        return ResponseEntity.ok(actualizada);
     }
 
-    @GetMapping("/cancelar/{id}")
-    public String cancelar(@PathVariable Long id, RedirectAttributes flash) {
-        try {
-            citaService.cancelar(id);
-            flash.addFlashAttribute("mensajeExito", "Cita cancelada.");
-        } catch (Exception e) {
-            flash.addFlashAttribute("mensajeError", e.getMessage());
-        }
-        return "redirect:/citas";
-    }
-
-    @GetMapping("/estado/{id}")
-    public String cambiarEstado(@PathVariable Long id,
-            @RequestParam CitaMedica.EstadoCita nuevoEstado,
-            RedirectAttributes flash) {
-        try {
-            citaService.cambiarEstado(id, nuevoEstado);
-            flash.addFlashAttribute("mensajeExito", "Estado actualizado.");
-        } catch (Exception e) {
-            flash.addFlashAttribute("mensajeError", e.getMessage());
-        }
-        return "redirect:/citas";
+    @PutMapping("/{id}/cancelar")
+    public ResponseEntity<Map<String, String>> cancelarCita(@PathVariable Long id) {
+        citaMedicaService.cancelarCita(id);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Cita médica cancelada con éxito");
+        return ResponseEntity.ok(response);
     }
 
 }

@@ -1,42 +1,44 @@
 package com.example.Proyecto_DWI.Service;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
-import jakarta.persistence.EntityNotFoundException;
-
 import com.example.Proyecto_DWI.Model.Medico;
 import com.example.Proyecto_DWI.Repository.MedicoRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class MedicoService {
     private final MedicoRepository medicoRepository;
 
-    public MedicoService(MedicoRepository medicoRepository) {
-        this.medicoRepository = medicoRepository;
-    }
-
-    public List<Medico> listarActivos() {
-        return medicoRepository.findByActivoTrue();
-    }
-
-    public Medico registrar(Medico medico) {
-        if (medicoRepository.existsByCmp(medico.getCmp())) {
-            throw new IllegalArgumentException("Ya existe un médico registrado con el CMP: " + medico.getCmp());
-        }
-        medico.setActivo(true);
-        return medicoRepository.save(medico);
+    public List<Medico> listarTodos() {
+        return medicoRepository.findAll();
     }
 
     public Medico buscarPorId(Long id) {
         return medicoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Médico no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Médico no encontrado"));
     }
 
-    public void eliminarLogico(Long id) {
-        Medico medico = buscarPorId(id);
-        medico.setActivo(false); 
-        medicoRepository.save(medico);
+    public Medico guardar(Medico medico) {
+        return medicoRepository.save(medico);
+    }
+
+    public Medico actualizar(Long id, Medico medico) {
+        Medico existente = buscarPorId(id);
+        existente.setNombre(medico.getNombre());
+        existente.setApellido(medico.getApellido());
+        existente.setEspecialidad(medico.getEspecialidad());
+        existente.setCmp(medico.getCmp());
+        return medicoRepository.save(existente);
+    }
+
+    public void eliminar(Long id) {
+        medicoRepository.deleteById(id);
+    }
+
+    // Método analítico para el Dashboard
+    public long contarMedicosActivos() {
+        return medicoRepository.count();
     }
 }

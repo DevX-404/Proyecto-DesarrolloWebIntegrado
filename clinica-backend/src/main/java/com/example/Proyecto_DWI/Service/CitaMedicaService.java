@@ -1,73 +1,68 @@
 package com.example.Proyecto_DWI.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
+import com.example.Proyecto_DWI.Model.CitaMedica;
+import com.example.Proyecto_DWI.Model.CitaMedica.EstadoCita;
+import com.example.Proyecto_DWI.Repository.CitaMedicaRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import com.example.Proyecto_DWI.Model.CitaMedica;
-import com.example.Proyecto_DWI.Repository.CitaMedicaRepository;
-
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 
 @Service
-@Slf4j
+@RequiredArgsConstructor
 public class CitaMedicaService {
 
-    private final CitaMedicaRepository citaRepository;
-    private final PacienteService pacienteService;
-    private final MedicoService medicoService;
-
-    public CitaMedicaService(CitaMedicaRepository citaRepository, 
-                             PacienteService pacienteService,
-                             MedicoService medicoService) {
-        this.citaRepository = citaRepository;
-        this.pacienteService = pacienteService;
-        this.medicoService = medicoService;
-    }
+    private final CitaMedicaRepository citaMedicaRepository;
 
     public List<CitaMedica> listarTodas() {
-        return citaRepository.findAll();
+        return citaMedicaRepository.findAll();
     }
 
     public CitaMedica buscarPorId(Long id) {
-        return citaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Cita no encontrada con ID: " + id));
+        return citaMedicaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
     }
 
-    public List<CitaMedica> listarPorPaciente(Long pacienteId) {
-        return citaRepository.findByPacienteId(pacienteId);
+    // Validación solicitada en la rúbrica
+    public boolean validarDisponibilidad(Long medicoId, LocalDateTime fechaCita) {
+        return citaMedicaRepository.findAll().stream()
+                .noneMatch(c -> c.getMedico().getId().equals(medicoId) && c.getFechaCita().equals(fechaCita));
     }
 
-    public CitaMedica registrar(Long pacienteId, Long medicoId, CitaMedica cita) {
-        // Validar fecha futura
-        if (cita.getFechaHora().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("No se puede agendar citas en el pasado.");
-        }
-
-        if (citaRepository.existeConflictoMedico(cita.getFechaHora(), medicoId)) {
-            throw new IllegalArgumentException("El médico ya tiene una cita en ese horario.");
-        }
-
-        cita.setPaciente(pacienteService.buscarPorId(pacienteId));
-        cita.setMedico(medicoService.buscarPorId(medicoId)); 
-        return citaRepository.save(cita);
+    public CitaMedica guardar(CitaMedica cita) {
+        return citaMedicaRepository.save(cita);
     }
 
-    public CitaMedica cambiarEstado(Long id, CitaMedica.EstadoCita nuevoEstado) {
+    public CitaMedica actualizar(Long id, CitaMedica cita) {
+        CitaMedica existente = buscarPorId(id);
+        existente.setMedico(cita.getMedico());
+        existente.setPaciente(cita.getPaciente());
+        existente.setFechaCita(cita.getFechaCita());
+        existente.setMotivo(cita.getMotivo());
+        existente.setEstado(cita.getEstado());
+        return citaMedicaRepository.save(existente);
+    }
+
+    public void cancelarCita(Long id) {
         CitaMedica cita = buscarPorId(id);
-
-        if (cita.getEstado() == CitaMedica.EstadoCita.COMPLETADA ||
-                cita.getEstado() == CitaMedica.EstadoCita.CANCELADA) {
-            throw new IllegalStateException("No se puede modificar una cita que ya ha finalizado o ha sido cancelada.");
-        }
-
-        cita.setEstado(nuevoEstado);
-        return citaRepository.save(cita);
+        cita.setEstado(EstadoCita.CANCELADA);
+        citaMedicaRepository.save(cita);
     }
 
-    public void cancelar(Long id) {
-        cambiarEstado(id, CitaMedica.EstadoCita.CANCELADA);
+    // Métodos analíticos para el Dashboard
+    public long contarCitasTotales() {
+        return citaMedicaRepository.count();
+    }
+
+    public List<CitaMedica> obtenerCitasDeHoy() {
+        LocalDateTime inicio = LocalDate.now().atStartOfDay();
+        LocalDateTime fin = LocalDate.now().atTime(LocalTime.MAX);
+        return citaMedicaRepository.findAll().stream()
+                .filter(c -> c.getFechaCita() != null && c.getFechaCita().isAfter(inicio) && c.getFechaCita().isBefore(fin))
+                .toList();
     }
 
 }

@@ -1,50 +1,35 @@
 package com.example.Proyecto_DWI.Controller;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-
-import com.example.Proyecto_DWI.Service.CitaMedicaService;
 import com.example.Proyecto_DWI.Service.PacienteService;
-import com.example.Proyecto_DWI.Service.MedicoService; 
+import com.example.Proyecto_DWI.Service.MedicoService;
+import com.example.Proyecto_DWI.Service.CitaMedicaService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import org.springframework.ui.Model;
+import java.util.HashMap;
+import java.util.Map;
 
-@Controller
+@RestController
+@RequestMapping("/api/dashboard")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200")
 public class DashboardController {
 
     private final PacienteService pacienteService;
-    private final CitaMedicaService citaService;
-    private final MedicoService medicoService; 
+    private final MedicoService medicoService;
+    private final CitaMedicaService citaMedicaService;
 
+    @GetMapping("/metrics")
+    public ResponseEntity<Map<String, Object>> obtenerMetricas() {
+        Map<String, Object> metrics = new HashMap<>();
+        
+        metrics.put("totalPacientes", pacienteService.contarPacientesActivos());
+        metrics.put("totalMedicos", medicoService.contarMedicosActivos());
+        metrics.put("totalCitasProgramadas", citaMedicaService.contarCitasTotales());
+        metrics.put("citasHoy", citaMedicaService.obtenerCitasDeHoy().size());
 
-
-    public DashboardController(PacienteService pacienteService, CitaMedicaService citaService, MedicoService medicoService) { 
-        this.medicoService = medicoService;
-        this.pacienteService = pacienteService;
-        this.citaService = citaService;
-    }
-
-    @GetMapping("/")
-    public String dashboard(Model model) {
-        // Estadísticas generales
-        model.addAttribute("totalPacientes", pacienteService.listarTodos().size());
-        model.addAttribute("totalMedicos", medicoService.listarActivos().size()); 
-        model.addAttribute("totalCitas", citaService.listarTodas().size());
-
-        // Filtros de citas para hoy
-        long citasHoy = citaService.listarTodas().stream()
-                .filter(c -> c.getFechaHora().toLocalDate().equals(java.time.LocalDate.now()))
-                .count();
-        model.addAttribute("citasHoy", citasHoy);
-
-        // Lista de las últimas 5 citas
-        model.addAttribute("ultimasCitas",
-                citaService.listarTodas().stream()
-                        .sorted((a, b) -> b.getFechaHora().compareTo(a.getFechaHora()))
-                        .limit(5)
-                        .toList());
-
-        return "index";
+        return ResponseEntity.ok(metrics);
     }
 
 }
