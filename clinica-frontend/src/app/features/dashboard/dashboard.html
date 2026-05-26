@@ -1,0 +1,46 @@
+<div class="p-4 min-h-screen bg-slate-50 transition-colors duration-300">
+  
+  <div class="mb-5">
+    <h1 class="text-base font-bold text-slate-800">Panel Principal</h1>
+    <p class="text-[11px] text-slate-400">Métricas clave y actividad diaria de la clínica.</p>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+    
+    @for (tarjeta of tarjetas; track tarjeta.titulo) {
+      <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-36">
+        
+        <div class="text-center">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{{ tarjeta.titulo }}</p>
+        </div>
+
+        <div class="text-center my-auto">
+          <p class="text-3xl font-black text-slate-700 tracking-tight">{{ tarjeta.valor }}</p>
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div class="h-full rounded-full transition-all duration-500" 
+                 [ngClass]="tarjeta.colorBarra" 
+                 [style.width]="tarjeta.progreso">
+            </div>
+          </div>
+          <div class="flex justify-between items-center text-[9px] font-semibold text-slate-400">
+            <span>Mes actual</span>
+            <span class="text-emerald-500 bg-emerald-50 px-1 rounded">{{ tarjeta.textoPorcentaje }}</span>
+          </div>
+        </div>
+
+      </div>
+    }
+
+  </div>
+
+  <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
+    <p class="text-slate-500 text-xs font-medium flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+      Integración de datos en tiempo real para MediQu. Gráficos detallados y reportes próximamente.
+    </p>
+  </div>
+
+</div>

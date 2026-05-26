@@ -1,0 +1,256 @@
+<div class="p-4 bg-slate-50 min-h-screen text-xs">
+  
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
+    <div>
+      <h1 class="text-base font-bold text-slate-800 tracking-tight">
+        {{ verInactivos ? 'Personal Médico Inactivo' : 'Módulo de Médicos' }}
+      </h1>
+      <p class="text-[11px] text-slate-400">
+        {{ verInactivos ? 'Historial de médicos dados de baja o trasladados.' : 'Listado y gestión del personal médico activo en el sistema.' }}
+      </p>
+    </div>
+    
+    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto relative">
+      <div class="relative flex-1 sm:flex-none">
+        <input type="text" placeholder="Buscar médico..." class="w-full sm:w-48 pl-7 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-500 transition-all">
+        <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+      </div>
+      
+      <button (click)="verInactivos = !verInactivos" 
+              [ngClass]="{'bg-red-50 border-red-200 text-red-600': verInactivos, 'bg-white border-slate-200 text-slate-600': !verInactivos}"
+              class="flex items-center gap-1.5 px-3 py-1.5 border hover:bg-slate-50 font-bold rounded-lg transition-all active:scale-95">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span>{{ verInactivos ? 'Ver Activos' : 'Ver Inactivos' }}</span>
+      </button>
+
+      <button *ngIf="!verInactivos" (click)="abrirFormulario()" class="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-all active:scale-95">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+        <span>Añadir Médico</span>
+      </button>
+
+      <button (click)="mostrarFiltros = !mostrarFiltros" 
+              [ngClass]="{'bg-blue-50 border-blue-200 text-blue-600': mostrarFiltros, 'bg-white border-slate-200 text-slate-600': !mostrarFiltros}"
+              class="flex items-center gap-1.5 px-3 py-1.5 border hover:bg-slate-50 font-bold rounded-lg transition-all active:scale-95">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+        <span>Filtros Avanzados</span>
+      </button>
+
+      <div class="relative">
+        <button (click)="mostrarMenuExportar = !mostrarMenuExportar" 
+                [ngClass]="{'bg-slate-100 border-slate-300': mostrarMenuExportar}"
+                class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-lg transition-all active:scale-95">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          <span>Exportar</span>
+          <svg class="w-2.5 h-2.5 text-slate-400 transition-transform duration-200" [ngClass]="{'rotate-180': mostrarMenuExportar}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+        </button>
+
+        @if (mostrarMenuExportar) {
+          <div class="absolute right-0 mt-1 w-40 bg-white border border-slate-100 rounded-xl shadow-xl z-50 py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
+            <button (click)="mostrarMenuExportar = false" class="w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium transition-colors">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Descargar Excel</span>
+            </button>
+            <button (click)="mostrarMenuExportar = false" class="w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium transition-colors">
+              <span class="w-2 h-2 rounded-full bg-red-500"></span>
+              <span>Descargar PDF</span>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (mostrarFiltros) {
+    <div class="bg-white border border-slate-200 rounded-xl p-4 mb-5 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-3 duration-200">
+      <div class="space-y-1">
+        <label class="text-[10px] font-bold text-slate-400 uppercase ml-0.5">Especialidad Médica</label>
+        <select class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none cursor-pointer focus:border-blue-500 transition-all">
+          <option value="">Todas las especialidades</option>
+          <option value="Cardiología">Cardiología</option>
+          <option value="Medicina Clínica">Medicina Clínica</option>
+          <option value="Neurología">Neurología</option>
+          <option value="Pediatría">Pediatría</option>
+        </select>
+      </div>
+      <div class="space-y-1">
+        <label class="text-[10px] font-bold text-slate-400 uppercase ml-0.5">Estado Disponibilidad</label>
+        <select class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none cursor-pointer focus:border-blue-500 transition-all">
+          <option value="">Todos los estados</option>
+          <option value="Activo">Activo / Disponible</option>
+          <option value="En Consulta">En Consulta</option>
+          <option value="En Guardia">En Guardia</option>
+        </select>
+      </div>
+    </div>
+  }
+
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50/70 border-b border-slate-200 text-slate-500 font-bold text-[10px] uppercase tracking-wider">
+            <th class="p-4">Médico</th>
+            <th class="p-4">Especialidad</th>
+            <th class="p-4">Estado</th>
+            <th class="p-4 text-center">Pacientes Hoy</th>
+            <th class="p-4">Próxima Cita</th>
+            <th class="p-4">Consultorio</th>
+            <th class="p-4 text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-600">
+          @for (medico of medicosFiltrados; track medico.matricula) {
+            <tr [ngClass]="{'bg-white': medico.activo, 'bg-slate-100/50 opacity-60': !medico.activo}" class="hover:bg-slate-50/40 transition-colors">
+              <td class="p-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs text-white shadow-sm"
+                       [ngClass]="{'bg-sky-500': medico.genero === 'M', 'bg-pink-400': medico.genero === 'F', 'bg-slate-400': !medico.activo}">
+                    {{ medico.nombre.charAt(0) }}
+                  </div>
+                  <div>
+                    <div class="font-bold text-slate-800 text-xs">{{ medico.nombre }}</div>
+                    <div class="text-[10px] text-slate-400 font-mono">Matrícula: {{ medico.matricula }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="p-4">
+                <div class="font-bold text-slate-700 text-xs">{{ medico.especialidad }}</div>
+                <div class="text-[10px] text-slate-400 font-medium">{{ medico.subEspecialidad }}</div>
+              </td>
+              <td class="p-4">
+                <div class="w-32">
+                  <span class="px-2.5 py-1 rounded-md text-[10px] font-bold block text-center border shadow-sm"
+                    [ngClass]="{
+                      'bg-emerald-500 text-white border-emerald-600': medico.estado === 'Activo', 
+                      'bg-blue-600 text-white border-blue-700': medico.estado === 'En Consulta', 
+                      'bg-cyan-600 text-white border-cyan-700': medico.estado === 'En Guardia',
+                      'bg-slate-400 text-white border-slate-500': medico.estado === 'De Baja'
+                    }">
+                    {{ medico.estado }}
+                  </span>
+                  <span class="text-[9px] text-slate-400 block text-center mt-0.5 font-medium">{{ medico.detalleEstado }}</span>
+                </div>
+              </td>
+              <td class="p-4 text-center font-black text-slate-700 text-xs">{{ medico.pacientesHoy }}</td>
+              <td class="p-4 font-mono text-slate-500 tracking-wide">
+                <span class="flex items-center gap-1">
+                  <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  {{ medico.proximaCita }}
+                </span>
+              </td>
+              <td class="p-4 font-medium text-slate-600">
+                <span class="flex items-center gap-1">
+                  <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                  {{ medico.consultorio }}
+                </span>
+              </td>
+              <td class="p-4 text-center">
+                <div class="flex items-center justify-center gap-1">
+                  <button (click)="cambiarEstadoMedico(medico)" class="p-1.5 rounded-lg transition-all"
+                          [ngClass]="{ 'text-slate-400 hover:text-red-500 hover:bg-slate-100': medico.activo, 'text-emerald-500 bg-emerald-50': !medico.activo }"
+                          [title]="medico.activo ? 'Dar de baja' : 'Reactivar'">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                  </button>
+                  <button (click)="editarMedico(medico)" class="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-amber-600 transition-all" title="Editar">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  @if (mostrarModal) {
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 transition-all">
+      <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        
+        <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+          <div>
+            <h3 class="font-black text-slate-800 text-sm tracking-tight">{{ esEdicion ? 'Modificar Personal Médico' : 'Registrar Nuevo Personal Médico' }}</h3>
+            <p class="text-[9px] text-slate-400 font-medium uppercase tracking-widest mt-0.5">MediQu Hospitalario</p>
+          </div>
+          <button (click)="cerrarFormulario()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition-all text-slate-400 text-xl">&times;</button>
+        </div>
+
+        <form (ngSubmit)="agregarMedico()" class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+          
+          <div class="space-y-3">
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold text-slate-400 uppercase">Nombre Completo del Médico *</label>
+              <input type="text" [(ngModel)]="nuevoMedico.nombre" name="nombre" placeholder="Ej. Dr. Carlos Mendoza" required 
+                     [readonly]="esEdicion"
+                     [ngClass]="{'bg-slate-200/60 text-slate-400 cursor-not-allowed': esEdicion, 'bg-slate-50': !esEdicion}"
+                     class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:border-blue-500 outline-none transition-all">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Número de Matrícula *</label>
+                <input type="text" [(ngModel)]="nuevoMedico.matricula" name="matricula" required readonly
+                       class="w-full px-3 py-2 bg-slate-200/60 text-slate-400 cursor-not-allowed border border-slate-200 rounded-lg text-xs outline-none">
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Género</label>
+                <select [(ngModel)]="nuevoMedico.genero" name="genero" [disabled]="esEdicion"
+                        [ngClass]="{'bg-slate-200/60 text-slate-400 cursor-not-allowed': esEdicion, 'bg-slate-50': !esEdicion}"
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs outline-none">
+                  <option value="M">Masculino</option>
+                  <option value="F">Femenino</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Especialidad *</label>
+                <select [(ngModel)]="nuevoMedico.especialidad" name="especialidad" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none">
+                  <option value="Cardiología">Cardiología</option>
+                  <option value="Medicina Clínica">Medicina Clínica</option>
+                  <option value="Neurología">Neurología</option>
+                  <option value="Pediatría">Pediatría</option>
+                </select>
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Sub-Especialidad / Detalles</label>
+                <input type="text" [(ngModel)]="nuevoMedico.subEspecialidad" name="subEspecialidad" placeholder="Ej. Cardio-onco o General" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Asignar Consultorio *</label>
+                <select [(ngModel)]="nuevoMedico.consultorio" name="consultorio" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none">
+                  <option value="Consultorio 05">Consultorio 05</option>
+                  <option value="Consultorio 10">Consultorio 10</option>
+                  <option value="Consultorio 11">Consultorio 11</option>
+                  <option value="Consultorio 12">Consultorio 12</option>
+                </select>
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Estado Disponibilidad</label>
+                <select [(ngModel)]="nuevoMedico.estado" name="estado" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none cursor-pointer transition-all"
+                        [ngClass]="{'text-emerald-600': nuevoMedico.estado === 'Activo', 'text-blue-600': nuevoMedico.estado === 'En Consulta', 'text-cyan-600': nuevoMedico.estado === 'En Guardia'}">
+                  <option value="Activo" class="text-slate-700">Activo</option>
+                  <option value="En Consulta" class="text-slate-700">En Consulta</option>
+                  <option value="En Guardia" class="text-slate-700">En Guardia</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button type="button" (click)="cerrarFormulario()" class="flex-1 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all">Cancelar</button>
+            <button type="submit" class="flex-[2] px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-all">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+</div>

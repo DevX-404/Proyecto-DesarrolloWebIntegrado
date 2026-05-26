@@ -1,0 +1,323 @@
+<div class="p-4 bg-slate-50 min-h-screen text-xs">
+  
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
+    <div>
+      <h1 class="text-base font-bold text-slate-800 tracking-tight">
+        {{ verInactivos ? 'Pacientes Dados de Baja' : 'Admisión de Pacientes' }}
+      </h1>
+      <p class="text-[11px] text-slate-400">
+        {{ verInactivos ? 'Historial de pacientes inactivos, retirados o trasladados.' : 'Control de ingresos, triaje e historias clínicas.' }}
+      </p>
+    </div>
+    
+    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto relative">
+      <div class="relative flex-1 sm:flex-none">
+        <input type="text" placeholder="Buscar por DNI o Nombre..." class="w-full sm:w-48 pl-7 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-500 transition-all">
+        <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+      </div>
+      
+      <button (click)="verInactivos = !verInactivos" 
+              [ngClass]="{'bg-red-50 border-red-200 text-red-600': verInactivos, 'bg-white border-slate-200 text-slate-600': !verInactivos}"
+              class="flex items-center gap-1.5 px-3 py-1.5 border hover:bg-slate-50 font-bold rounded-lg transition-all active:scale-95">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span>{{ verInactivos ? 'Ver Admitidos' : 'Ver Inactivos' }}</span>
+      </button>
+
+      <button *ngIf="!verInactivos" (click)="abrirFormulario()" class="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm transition-all active:scale-95">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+        <span>Admitir Paciente</span>
+      </button>
+
+      <button (click)="mostrarFiltros = !mostrarFiltros" 
+              [ngClass]="{'bg-blue-50 border-blue-200 text-blue-600': mostrarFiltros, 'bg-white border-slate-200 text-slate-600': !mostrarFiltros}"
+              class="flex items-center gap-1.5 px-3 py-1.5 border hover:bg-slate-50 font-bold rounded-lg transition-all active:scale-95">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+        <span>Filtros</span>
+      </button>
+
+      <div class="relative">
+        <button (click)="mostrarMenuExportar = !mostrarMenuExportar" 
+                [ngClass]="{'bg-slate-100 border-slate-300': mostrarMenuExportar}"
+                class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-lg transition-all active:scale-95">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          <span>Exportar</span>
+          <svg class="w-2.5 h-2.5 text-slate-400 transition-transform duration-200" [ngClass]="{'rotate-180': mostrarMenuExportar}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+        </button>
+
+        @if (mostrarMenuExportar) {
+          <div class="absolute right-0 mt-1 w-40 bg-white border border-slate-100 rounded-xl shadow-xl z-50 py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
+            <button (click)="mostrarMenuExportar = false" class="w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium transition-colors">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Descargar Excel</span>
+            </button>
+            <button (click)="mostrarMenuExportar = false" class="w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium transition-colors">
+              <span class="w-2 h-2 rounded-full bg-red-500"></span>
+              <span>Descargar PDF</span>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (mostrarFiltros) {
+    <div class="bg-white border border-slate-200 rounded-xl p-4 mb-5 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-3 duration-200">
+      <div class="space-y-1">
+        <label class="text-[10px] font-bold text-slate-400 uppercase ml-0.5">Prioridad Triaje</label>
+        <select class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none cursor-pointer focus:border-blue-500 transition-all">
+          <option value="">Todos los triajes</option>
+          <option value="Estable">Estable</option>
+          <option value="Observación">Observación</option>
+          <option value="Urgencia">Urgencia</option>
+        </select>
+      </div>
+      <div class="space-y-1">
+        <label class="text-[10px] font-bold text-slate-400 uppercase ml-0.5">Etapa - Rango de Edad</label>
+        <select class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none cursor-pointer focus:border-blue-500 transition-all">
+          <option value="">Todas las etapas</option>
+          <option value="adultos">Adultos </option>
+          <option value="pediatria">Pediatría </option>
+        </select>
+      </div>
+      <div class="space-y-1">
+        <label class="text-[10px] font-bold text-slate-400 uppercase ml-0.5">Unidad de Tiempo</label>
+        <select class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none cursor-pointer focus:border-blue-500 transition-all">
+          <option value="">Años - Meses</option>
+          <option value="Años">Solo registrados en Años</option>
+          <option value="Meses">Solo Lactantes - Neonatales en meses</option>
+        </select>
+      </div>
+    </div>
+  }
+
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50/70 border-b border-slate-200 text-slate-500 font-bold text-[10px] uppercase tracking-wider">
+            <th class="p-4">Paciente / Información de Contacto</th>
+            <th class="p-4">DNI</th>
+            <th class="p-4">Edad</th>
+            <th class="p-4">Ubicación</th>
+            <th class="p-4">Prioridad Triaje</th>
+            <th class="p-4 text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-slate-600">
+          @for (paciente of pacientesFiltrados; track paciente.historia; let i = $index) {
+            <tr [ngClass]="{'bg-slate-50/40': paciente.activo, 'bg-red-50/20': !paciente.activo}" class="hover:bg-slate-50/40 transition-colors">
+              <td class="p-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs text-white shadow-sm"
+                       [ngClass]="{
+                         'bg-slate-400': !paciente.activo,
+                         'bg-sky-500': paciente.activo && paciente.genero === 'M' && paciente.tipoEdad === 'Años' && +paciente.edad >= 18,
+                         'bg-pink-400': paciente.activo && paciente.genero === 'F' && paciente.tipoEdad === 'Años' && +paciente.edad >= 18,
+                         'bg-emerald-400': paciente.activo && paciente.genero === 'M' && (paciente.tipoEdad === 'Meses' || +paciente.edad < 18),
+                         'bg-purple-300': paciente.activo && paciente.genero === 'F' && (paciente.tipoEdad === 'Meses' || +paciente.edad < 18)
+                       }">
+                    {{ paciente.nombre.charAt(0) }}
+                  </div>
+                  <div class="space-y-1">
+                    <div>
+                      <span class="font-bold text-slate-800 text-xs">{{ paciente.nombre }}</span>
+                      <span class="ml-2 text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-400 font-mono">{{ paciente.historia }}</span>
+                    </div>
+                    <div class="text-[10px] text-slate-400">Cel: {{ paciente.celular || '—' }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="p-4 font-mono text-slate-500 tracking-wide">{{ paciente.dni }}</td>
+              <td class="p-4">
+                <span class="font-bold text-slate-700">{{ paciente.edad }}</span>
+                <span class="ml-1 text-slate-400 font-medium">{{ paciente.tipoEdad.toLowerCase() }}</span>
+              </td>
+              <td class="p-4 text-slate-500 font-medium max-w-[160px] truncate">{{ paciente.direccion || '—' }}</td>
+              <td class="p-4">
+                <div class="w-28">
+                  @if (paciente.activo) {
+                    <span class="px-2.5 py-1 rounded-md text-[10px] font-bold block text-center border shadow-sm"
+                      [ngClass]="{
+                        'bg-emerald-500 text-white border-emerald-600': paciente.triaje === 'Estable', 
+                        'bg-amber-500 text-white border-amber-600 animate-pulse': paciente.triaje === 'Observación', 
+                        'bg-red-500 text-white border-red-600 animate-pulse': paciente.triaje === 'Urgencia'
+                      }">
+                      {{ paciente.triaje }}
+                    </span>
+                  } @else {
+                    <span class="px-2.5 py-1 rounded-md text-[10px] font-bold block text-center border bg-red-200 text-red-700 border-red-300">
+                      Inactivo
+                    </span>
+                  }
+                </div>
+              </td>
+              <td class="p-4 text-center">
+                <div class="flex items-center justify-center gap-1">
+                  <button (click)="verHistorialClinico(paciente)" class="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-blue-600 transition-all" title="Ver Historial">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                  </button>
+                  <button (click)="cambiarEstadoPaciente(paciente)" class="p-1.5 rounded-lg transition-all" 
+                          [ngClass]="{ 'text-slate-400 hover:text-red-500 hover:bg-slate-100': paciente.activo, 'text-emerald-500 bg-emerald-50 hover:bg-emerald-100': !paciente.activo }" 
+                          [title]="paciente.activo ? 'Dar de baja' : 'Reactivar'">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                  </button>
+                  <button (click)="editarPaciente(paciente, i)" class="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-amber-600 transition-all" title="Editar">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  @if (mostrarModal) {
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 transition-all">
+      <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div class="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+          <div>
+            <h3 class="font-black text-slate-800 text-sm tracking-tight">{{ esEdicion ? 'Editar Registro de Paciente' : 'Nueva Admisión de Paciente' }}</h3>
+            <p class="text-[9px] text-slate-400 font-medium uppercase tracking-widest mt-0.5">MediQu Portal Clínico</p>
+          </div>
+          <button (click)="cerrarFormulario()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition-all text-slate-400 text-xl">&times;</button>
+        </div>
+
+        <form (ngSubmit)="agregarPaciente()" class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+          
+          <div class="space-y-3">
+            
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold text-slate-400 uppercase">Nombre Completo *</label>
+              <input type="text" [(ngModel)]="nuevoPaciente.nombre" name="nombre" placeholder="Ej. Juan Pérez" required 
+                     [readonly]="esEdicion"
+                     [ngClass]="{'bg-slate-200/60 text-slate-400 cursor-not-allowed': esEdicion, 'bg-slate-50': !esEdicion}"
+                     class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:border-blue-500 outline-none transition-all">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase">DNI *</label>
+                <input type="text" [(ngModel)]="nuevoPaciente.dni" name="dni" placeholder="8 dígitos" maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required
+                       [readonly]="esEdicion"
+                       [ngClass]="{'bg-slate-200/60 text-slate-400 cursor-not-allowed': esEdicion, 'bg-slate-50': !esEdicion}"
+                       class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:border-blue-500 outline-none transition-all">
+              </div>
+              
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Edad Clínica *</label>
+                <div class="flex border border-slate-200 rounded-lg overflow-hidden shadow-sm"
+                     [ngClass]="{'bg-slate-200/60 cursor-not-allowed': esEdicion}">
+                  <input type="text" [(ngModel)]="nuevoPaciente.edad" name="edad" placeholder="0" maxlength="2" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required
+                         [readonly]="esEdicion"
+                         [ngClass]="{'text-slate-400 bg-transparent': esEdicion, 'bg-slate-50 text-slate-700': !esEdicion}"
+                         class="w-1/2 px-2 py-2 text-xs text-center font-black outline-none">
+                  <select [(ngModel)]="nuevoPaciente.tipoEdad" name="tipoEdad" 
+                          [disabled]="esEdicion"
+                          [ngClass]="{'text-slate-400 cursor-not-allowed bg-transparent': esEdicion, 'text-blue-600 bg-white': !esEdicion}"
+                          class="w-1/2 px-2 py-2 border-l text-[10px] font-bold outline-none">
+                    <option value="Años">Años</option>
+                    <option value="Meses">Meses</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Género</label>
+                <select [(ngModel)]="nuevoPaciente.genero" name="genero" 
+                        [disabled]="esEdicion"
+                        [ngClass]="{'bg-slate-200/60 text-slate-400 cursor-not-allowed': esEdicion, 'bg-slate-50': !esEdicion}"
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs outline-none cursor-pointer">
+                  <option value="M">Masculino</option>
+                  <option value="F">Femenino</option>
+                </select>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Triaje Inicial</label>
+                <select [(ngModel)]="nuevoPaciente.triaje" name="triaje" 
+                        class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none cursor-pointer transition-all"
+                        [ngClass]="{'text-emerald-600': nuevoPaciente.triaje === 'Estable', 'text-amber-500': nuevoPaciente.triaje === 'Observación', 'text-red-500': nuevoPaciente.triaje === 'Urgencia'}">
+                  <option value="Estable" class="text-slate-700">Estable</option>
+                  <option value="Observación" class="text-slate-700">Observación</option>
+                  <option value="Urgencia" class="text-slate-700">Urgencia</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-dashed border-slate-200 space-y-3">
+            <p class="text-[10px] font-black text-blue-600 uppercase tracking-wider">Ficha Médica Base (Historial)</p>
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold text-red-500 uppercase">Alergias del Paciente</label>
+              <input type="text" [(ngModel)]="nuevoPaciente.alergias" name="alergias" placeholder="Ej. Penicilina, AINES (O dejar vacío)" 
+                     class="w-full px-3 py-2 bg-red-50/30 border border-red-200 rounded-lg text-xs font-medium outline-none text-red-700">
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold text-slate-500 uppercase">Antecedentes Clínicos Relevantes</label>
+              <textarea [(ngModel)]="nuevoPaciente.antecedentes" name="antecedentes" rows="2" placeholder="Ej. Hipertensión, operaciones..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none resize-none"></textarea>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-dashed border-slate-200 space-y-3">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Contacto (Opcional)</p>
+            <div class="grid grid-cols-2 gap-4">
+              <input type="text" [(ngModel)]="nuevoPaciente.celular" name="celular" placeholder="Celular (9 dígitos)" maxlength="9" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none">
+              <input type="text" [(ngModel)]="nuevoPaciente.direccion" name="direccion" placeholder="Dirección / Domicilio" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none">
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button type="button" (click)="cerrarFormulario()" class="flex-1 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all">Cancelar</button>
+            <button type="submit" class="flex-[2] px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-all">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (mostrarHistorial && pacienteSeleccionadoHistorial) {
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 transition-all">
+      <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div class="bg-blue-600 px-6 py-4 flex justify-between items-center text-white">
+          <div>
+            <h3 class="font-black text-sm tracking-tight">Expediente Clínico</h3>
+            <p class="text-[9px] text-blue-200 font-medium uppercase tracking-widest mt-0.5">N° Historia: {{ pacienteSeleccionadoHistorial.historia }}</p>
+          </div>
+          <button (click)="cerrarHistorial()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-blue-700 transition-all text-white text-xl">&times;</button>
+        </div>
+
+        <div class="p-5 space-y-4 bg-slate-50/50">
+          <div class="bg-white p-3 rounded-xl border border-slate-200 grid grid-cols-2 gap-3 shadow-sm text-[11px]">
+            <div><span class="text-slate-400 font-bold uppercase text-[9px] block">Paciente:</span> <strong class="text-slate-800">{{ pacienteSeleccionadoHistorial.nombre }}</strong></div>
+            <div><span class="text-slate-400 font-bold uppercase text-[9px] block">DNI:</span> <span class="font-mono">{{ pacienteSeleccionadoHistorial.dni }}</span></div>
+            <div><span class="text-slate-400 font-bold uppercase text-[9px] block">Edad:</span> {{ pacienteSeleccionadoHistorial.edad }} {{ pacienteSeleccionadoHistorial.tipoEdad }}</div>
+            <div><span class="text-slate-400 font-bold uppercase text-[9px] block">Estado en Sistema:</span> <span class="font-bold" [ngClass]="{'text-emerald-600': pacienteSeleccionadoHistorial.activo, 'text-red-500': !pacienteSeleccionadoHistorial.activo}">{{ pacienteSeleccionadoHistorial.activo ? 'Admitido / Activo' : 'Inactivo (De Baja)' }}</span></div>
+          </div>
+
+          <div class="space-y-3">
+            <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+              <span class="text-red-500 font-bold uppercase text-[9px] block mb-1"> Alergias Registradas</span>
+              <p class="text-xs font-bold text-red-700 bg-red-50/50 p-2 border border-red-100 rounded-md">{{ pacienteSeleccionadoHistorial.alergias }}</p>
+            </div>
+            <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+              <span class="text-blue-500 font-bold uppercase text-[9px] block mb-1"> Antecedentes Médicos</span>
+              <p class="text-xs text-slate-700 bg-blue-50/50 p-2 border border-blue-100 rounded-md leading-relaxed">{{ pacienteSeleccionadoHistorial.antecedentes }}</p>
+            </div>
+          </div>
+
+          <div class="flex justify-end">
+            <button type="button" (click)="cerrarHistorial()" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow-md transition-all">Cerrar Ficha</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>
