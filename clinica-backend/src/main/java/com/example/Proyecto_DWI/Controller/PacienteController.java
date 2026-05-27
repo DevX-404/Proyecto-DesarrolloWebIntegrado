@@ -23,15 +23,19 @@ public class PacienteController {
     private final PacienteService pacienteService;
     private final UsuarioRepository usuarioRepository;
 
-    // Listar todos los pacientes
-    public ResponseEntity<List<Paciente>> listar(Principal principal) {
-        String username = principal.getName();
-        Usuario usuario = usuarioRepository.findByUsername(username).orElseThrow();
-
-        String rol = usuario.getRol().getNombre(); // "ADMIN" o "MEDICO"
+    @GetMapping
+    public ResponseEntity<List<Paciente>> listarTodos(Principal principal) {
+        if (principal == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        
+        Usuario usuario = usuarioRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        String rol = usuario.getRol().getNombre();
         Long medicoId = (usuario.getMedico() != null) ? usuario.getMedico().getId() : null;
-
-        return ResponseEntity.ok(pacienteService.listarPorRol(username, rol, medicoId));
+        
+        return ResponseEntity.ok(pacienteService.listarPorRol(rol, medicoId));
     }
 
     // Obtener un paciente por ID

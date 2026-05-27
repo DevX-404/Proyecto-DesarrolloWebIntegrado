@@ -29,7 +29,11 @@ export const routes: Routes = [
       {
         path: 'citas',
         loadComponent: () => import('./features/citas/citas/citas').then(m => m.CitasComponent)
-      }
+      },
+    {
+      path: 'mis-citas',
+      loadComponent: () => import('./features/medico-citas/medico-citas').then(m => m.MedicoCitasComponent)
+    }
     ]
   },
   { 

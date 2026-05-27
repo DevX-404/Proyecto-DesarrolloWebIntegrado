@@ -33,8 +33,9 @@ export class MedicoCitasComponent implements OnInit {
     this.cargarCitasMedico();
   }
 
+  // 🟢 CORREGIDO: Eliminamos la variable hardcodeada 'medicoIdLogueado'
   cargarCitasMedico(): void {
-    this.citaService.listarPorMedico(this.medicoIdLogueado).subscribe({
+    this.citaService.listarMisCitas().subscribe({
       next: (data: CitaMedica[]) => {
         this.citas = data;
         this.generarCalendario();

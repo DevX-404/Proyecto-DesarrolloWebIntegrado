@@ -28,7 +28,7 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 
     List<Paciente> findByActivoTrueAndNombreContaining(String nombre);
 
-    @Query("SELECT DISTINCT p FROM Paciente p JOIN CitaMedica c ON c.paciente.id = p.id WHERE c.medico.id = :medicoId")
+    @Query("SELECT DISTINCT c.paciente FROM CitaMedica c WHERE c.medico.id = :medicoId")
     List<Paciente> findPacientesPorMedico(@Param("medicoId") Long medicoId);
 
 }

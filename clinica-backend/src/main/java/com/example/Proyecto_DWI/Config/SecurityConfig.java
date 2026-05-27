@@ -40,15 +40,14 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 🟢 REFINAMIENTO DE ROLES PARA MÉDICOS:
-                        // Permitir listar médicos (GET) tanto a ADMIN como a MEDICO para poder agendar
-                        // citas
+                        // 🔑 RESTAURADO:hasAnyRole valida correctamente usando el prefijo ROLE_ interno
+                        // Permitir listar médicos (GET) tanto a ADMIN como a MEDICO
                         .requestMatchers(HttpMethod.GET, "/api/medicos/**").hasAnyRole("ADMIN", "MEDICO")
-                        // Cualquier otra acción de médicos (crear, editar, borrar) sigue siendo
-                        // exclusiva de ADMIN
+                        
+                        // Cualquier otra acción de médicos (crear, editar, borrar) es exclusiva de ADMIN
                         .requestMatchers("/api/medicos/**").hasRole("ADMIN")
 
-                        // Resto de endpoints accesibles por ambos roles
+                        // Acceso unificado a los endpoints de la clínica
                         .requestMatchers("/api/pacientes/**").hasAnyRole("ADMIN", "MEDICO")
                         .requestMatchers("/api/citas/**").hasAnyRole("ADMIN", "MEDICO")
                         .requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN", "MEDICO")

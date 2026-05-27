@@ -13,11 +13,14 @@ public class PacienteService {
     private final PacienteRepository pacienteRepository;
 
     // En PacienteService.java
-    public List<Paciente> listarPorRol(String username, String role, Long medicoId) {
-        if ("MEDICO".equals(role)) {
+    public List<Paciente> listarPorRol(String rol, Long medicoId) {
+        // Normalizamos el rol quitando prefijos por seguridad
+        String rolLimpio = rol.toUpperCase().replace("ROLE_", "");
+
+        if ("MEDICO".equals(rolLimpio) && medicoId != null) {
             return pacienteRepository.findPacientesPorMedico(medicoId);
         }
-        return pacienteRepository.findAll(); // ADMIN ve todo
+        return pacienteRepository.findAll(); // El ADMIN ve absolutamente todos
     }
 
     public Paciente buscarPorId(Long id) {

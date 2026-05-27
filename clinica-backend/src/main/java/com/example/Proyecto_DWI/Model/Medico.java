@@ -1,5 +1,6 @@
 package com.example.Proyecto_DWI.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Column;
@@ -22,6 +23,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Medico {
 
     @Id
@@ -57,7 +59,7 @@ public class Medico {
     private String proximaCita = "—";
 
     @OneToOne(mappedBy = "medico", fetch = FetchType.LAZY)
-    @JsonIgnoreProperties("medico")
+    @JsonIgnore
     private Usuario usuario;
 
 }

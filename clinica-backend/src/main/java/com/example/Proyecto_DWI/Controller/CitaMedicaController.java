@@ -1,12 +1,15 @@
 package com.example.Proyecto_DWI.Controller;
 
 import com.example.Proyecto_DWI.Model.CitaMedica;
+import com.example.Proyecto_DWI.Model.Usuario;
+import com.example.Proyecto_DWI.Repository.UsuarioRepository;
 import com.example.Proyecto_DWI.Service.CitaMedicaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.security.Principal;
 
 import java.util.List;
 import java.util.HashMap;
@@ -18,10 +21,27 @@ import java.util.Map;
 public class CitaMedicaController {
 
     private final CitaMedicaService citaMedicaService;
+    private final UsuarioRepository usuarioRepository;
 
     @GetMapping
     public ResponseEntity<List<CitaMedica>> listarTodas() {
         return ResponseEntity.ok(citaMedicaService.listarTodas());
+    }
+
+    @GetMapping("/mis-citas")
+    public ResponseEntity<List<CitaMedica>> listarMisCitas(Principal principal) {
+        if (principal == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        Usuario usuario = usuarioRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (usuario.getMedico() == null) {
+            return ResponseEntity.ok(List.of()); // Si es admin, retorna lista vacía
+        }
+
+        return ResponseEntity.ok(citaMedicaService.listarPorMedico(usuario.getMedico().getId()));
     }
 
     @GetMapping("/{id}")
