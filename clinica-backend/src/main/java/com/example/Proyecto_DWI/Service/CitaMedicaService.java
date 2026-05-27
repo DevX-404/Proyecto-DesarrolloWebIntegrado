@@ -26,10 +26,8 @@ public class CitaMedicaService {
                 .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
     }
 
-    // Validación solicitada en la rúbrica
     public boolean validarDisponibilidad(Long medicoId, LocalDateTime fechaCita) {
-        return citaMedicaRepository.findAll().stream()
-                .noneMatch(c -> c.getMedico().getId().equals(medicoId) && c.getFechaCita().equals(fechaCita));
+        return !citaMedicaRepository.existeConflictoMedico(fechaCita, medicoId);
     }
 
     public CitaMedica guardar(CitaMedica cita) {
@@ -57,13 +55,11 @@ public class CitaMedicaService {
         return citaMedicaRepository.count();
     }
 
+    // ✅ LO QUE DEBES PONER
     public List<CitaMedica> obtenerCitasDeHoy() {
         LocalDateTime inicio = LocalDate.now().atStartOfDay();
         LocalDateTime fin = LocalDate.now().atTime(LocalTime.MAX);
-        return citaMedicaRepository.findAll().stream()
-                .filter(c -> c.getFechaCita() != null && c.getFechaCita().isAfter(inicio)
-                        && c.getFechaCita().isBefore(fin))
-                .toList();
+        return citaMedicaRepository.findTodasCitasDeHoy(inicio, fin);
     }
 
     // Agrega esto dentro de tu CitaMedicaService.java
