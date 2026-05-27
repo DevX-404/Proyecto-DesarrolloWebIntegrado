@@ -178,15 +178,18 @@
           <button (click)="cerrarFormulario()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition-all text-slate-400 text-xl">&times;</button>
         </div>
 
-        <form (ngSubmit)="agregarMedico()" class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+        <form #medicoForm="ngForm" (ngSubmit)="medicoForm.valid && agregarMedico()" class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
           
           <div class="space-y-3">
             <div class="space-y-1">
               <label class="text-[10px] font-bold text-slate-400 uppercase">Nombre Completo del Médico *</label>
-              <input type="text" [(ngModel)]="nuevoMedico.nombre" name="nombre" placeholder="Ej. Dr. Carlos Mendoza" required 
+              <input type="text" [(ngModel)]="nuevoMedico.nombre" name="nombre" #medicoNombre="ngModel" placeholder="Ej. Dr. Carlos Mendoza" required 
                      [readonly]="esEdicion"
-                     [ngClass]="{'bg-slate-200/60 text-slate-400 cursor-not-allowed': esEdicion, 'bg-slate-50': !esEdicion}"
+                     [ngClass]="{'bg-slate-200/60 text-slate-400 cursor-not-allowed': esEdicion, 'border-red-400 focus:border-red-400': medicoNombre.invalid && (medicoNombre.dirty || medicoNombre.touched), 'bg-slate-50': !esEdicion}"
                      class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:border-blue-500 outline-none transition-all">
+              @if (medicoNombre.invalid && (medicoNombre.dirty || medicoNombre.touched)) {
+                <span class="text-[10px] text-red-500 font-bold mt-1 block">⚠️ El nombre completo del especialista es obligatorio.</span>
+              }
             </div>
 
             <div class="grid grid-cols-2 gap-4">
@@ -246,7 +249,7 @@
 
           <div class="flex gap-3 pt-2">
             <button type="button" (click)="cerrarFormulario()" class="flex-1 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all">Cancelar</button>
-            <button type="submit" class="flex-[2] px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-all">Guardar Cambios</button>
+            <button type="submit" [disabled]="medicoForm.invalid" class="flex-[2] px-4 py-2 text-white font-bold rounded-xl shadow-md transition-all" [ngClass]="{'bg-blue-600 hover:bg-blue-700 cursor-pointer': medicoForm.valid, 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none': medicoForm.invalid}">Guardar Cambios</button>
           </div>
         </form>
       </div>

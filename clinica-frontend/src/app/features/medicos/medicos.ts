@@ -13,7 +13,7 @@ export class MedicosComponent implements OnInit {
   private medicoService = inject(MedicoService);
 
   medicos: Medico[] = [];
-  
+
   // Variables de control de UI
   verInactivos: boolean = false;
   mostrarFiltros: boolean = false;
@@ -41,17 +41,16 @@ export class MedicosComponent implements OnInit {
   }
 
   cargarMedicos(): void {
+    // En medicos.ts cambia la asignación para leer la data pura del backend:
     this.medicoService.listar().subscribe({
       next: (data: Medico[]) => {
-        // Enriquecemos la data con métricas auxiliares de presentación requeridas por el HTML
         this.medicos = data.map(m => ({
           ...m,
-          pacientesHoy: m.pacientesHoy ?? Math.floor(Math.random() * 8) + 2,
-          proximaCita: m.proximaCita ?? '15:30 hs',
-          detalleEstado: m.detalleEstado ?? (m.estado === 'Activo' ? 'Disponible en piso' : 'Atendiendo Triaje')
+          pacientesHoy: m.pacientesHoy, // Lee el cálculo de Spring
+          proximaCita: m.proximaCita,   // Lee la fecha formateada de Spring
+          detalleEstado: m.estado === 'Activo' ? 'Disponible en piso' : 'Atendiendo Consulta'
         }));
-      },
-      error: (err: any) => console.error('Error al cargar médicos:', err)
+      }
     });
   }
 
@@ -105,8 +104,8 @@ export class MedicosComponent implements OnInit {
     const confirmacion = nuevoEstado ? '¿Desea reactivar a este médico?' : '¿Desea dar de baja a este médico del servicio activo?';
 
     if (confirm(confirmacion)) {
-      const medicoModificado = { 
-        ...medico, 
+      const medicoModificado = {
+        ...medico,
         activo: nuevoEstado,
         estado: nuevoEstado ? 'Activo' : 'De Baja'
       };

@@ -1,0 +1,94 @@
+<div class="p-4 bg-slate-50 min-h-screen text-xs">
+  
+  <div class="mb-5">
+    <h1 class="text-base font-bold text-slate-800 tracking-tight">Mi Agenda de Consultas</h1>
+    <p class="text-[11px] text-slate-400">Calendario interactivo de citas médicas y control de turnos diarios.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    
+    <div class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between">
+      <div>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xs font-black text-slate-700 uppercase tracking-widest">
+            {{ meses[mesActual] }} {{ anioActual }}
+          </h2>
+          <div class="flex gap-1">
+            <button (click)="cambiarMes(-1)" class="p-1 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-md font-bold transition-all active:scale-95">&larr; Ant</button>
+            <button (click)="cambiarMes(1)" class="p-1 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-md font-bold transition-all active:scale-95">Sig &rarr;</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-7 text-center font-bold text-slate-400 text-[10px] uppercase tracking-wider mb-2 border-b pb-1">
+          @for (diaSemana of diasDeLaSemana; track $index) {
+            <div>{{ diaSemana }}</div>
+          }
+        </div>
+
+        <div class="grid grid-cols-7 gap-1">
+          @for (dia of grillaDias; track $index) {
+            <div class="h-16 relative border border-slate-100 rounded-lg transition-all flex flex-col justify-between p-1 cursor-pointer"
+                 [ngClass]="{
+                   'bg-slate-50/50 cursor-default border-none': dia === null,
+                   'bg-white hover:bg-slate-50': dia !== null && diaSeleccionado !== dia,
+                   'bg-blue-600 border-blue-600 text-white shadow-md': diaSeleccionado === dia
+                 }"
+                 (click)="dia !== null && seleccionarDia(dia)">
+              
+              @if (dia !== null) {
+                <span class="font-bold text-[11px]" [ngClass]="{'text-slate-700': diaSeleccionado !== dia, 'text-white': diaSeleccionado === dia}">{{ dia }}</span>
+                
+                @if (tieneCita(dia)) {
+                  <div class="w-full flex justify-center pb-1">
+                    <span class="w-2 h-2 rounded-full inline-block animate-pulse"
+                          [ngClass]="{'bg-blue-500': diaSeleccionado !== dia, 'bg-white': diaSeleccionado === dia}">
+                    </span>
+                  </div>
+                }
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm h-fit">
+      <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider border-b pb-2 mb-3">
+        Consultas para el {{ diaSeleccionado ? diaSeleccionado + ' de ' + meses[mesActual] : '...' }}
+      </h3>
+
+      <div class="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+        @for (c of citasDelDiaSeleccionado; track c.id) {
+          <div class="p-3 bg-slate-50 border border-slate-100 rounded-xl flex flex-col gap-1.5 shadow-sm">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="font-bold text-slate-800 text-[11px]">{{ c.paciente?.nombre }}</p>
+                <p class="text-[9px] text-slate-400 font-mono">HC: {{ c.paciente?.historia }}</p>
+              </div>
+              <span class="px-1.5 py-0.5 rounded text-[8px] font-extrabold tracking-wide uppercase shadow-sm text-white"
+                    [ngClass]="{
+                      'bg-red-500': c.prioridadTriaje === 'ALTA',
+                      'bg-amber-500': c.prioridadTriaje === 'MEDIA',
+                      'bg-emerald-500': c.prioridadTriaje === 'BAJA'
+                    }">
+                {{ c.prioridadTriaje }}
+              </span>
+            </div>
+
+            <div class="border-t border-slate-200/60 pt-1.5 flex items-center justify-between text-[10px] text-slate-500 font-medium">
+              <span class="flex items-center gap-1 font-mono text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                ⏰ {{ c.fechaCita | date:'HH:mm' }} hs
+              </span>
+              <span class="italic text-slate-400 truncate max-w-[140px]">{{ c.motivo }}</span>
+            </div>
+          </div>
+        } @empty {
+          <div class="text-center py-8 text-slate-400 italic">
+            No tienes citas médicas registradas para esta fecha.
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+</div>

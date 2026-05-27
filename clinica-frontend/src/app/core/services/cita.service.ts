@@ -9,8 +9,8 @@ export interface CitaMedica {
   paciente: Partial<Paciente>;
   medico: Partial<Medico>;
   fechaCita: string;
-  prioridadTriaje: string; 
-  motivo: string; 
+  prioridadTriaje: string;
+  motivo: string;
   estado?: string;
 }
 
@@ -22,4 +22,7 @@ export class CitaService {
   listar(): Observable<CitaMedica[]> { return this.http.get<CitaMedica[]>(this.apiUrl); }
   crear(cita: CitaMedica): Observable<any> { return this.http.post<any>(this.apiUrl, cita); }
   cancelar(id: number): Observable<any> { return this.http.put<any>(`${this.apiUrl}/${id}/cancelar`, {}); }
+  listarPorMedico(medicoId: number): Observable<CitaMedica[]> {
+    return this.http.get<CitaMedica[]>(`${this.apiUrl}/medico/${medicoId}`);
+  }
 }

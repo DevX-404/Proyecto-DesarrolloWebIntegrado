@@ -8,10 +8,12 @@ import com.example.Proyecto_DWI.Model.Permiso;
 import com.example.Proyecto_DWI.Model.Rol;
 import com.example.Proyecto_DWI.Model.RolPermiso;
 import com.example.Proyecto_DWI.Model.Usuario;
+import com.example.Proyecto_DWI.Model.Medico; 
 import com.example.Proyecto_DWI.Repository.PermisoRepository;
 import com.example.Proyecto_DWI.Repository.RolRepository;
 import com.example.Proyecto_DWI.Repository.UsuarioRepository;
 import com.example.Proyecto_DWI.Repository.RolPermisoRepository;
+import com.example.Proyecto_DWI.Repository.MedicoRepository;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +26,8 @@ public class DataSeeder implements CommandLineRunner {
     private final RolRepository rolRepository;
     private final PermisoRepository permisoRepository;
     private final RolPermisoRepository rolPermisoRepository; 
-    private final PasswordEncoder passwordEncoder; // 2. INYÉCTALO AQUÍ EN EL CONSTRUCTOR
+    private final MedicoRepository medicoRepository; 
+    private final PasswordEncoder passwordEncoder; 
 
     @Override
     public void run(String... args) throws Exception {
@@ -71,7 +74,7 @@ public class DataSeeder implements CommandLineRunner {
             
             Usuario adminUsuario = Usuario.builder()
                 .username("admin")
-                .password(passwordEncoder.encode("admin123")) // 3. ENCRÍPTALO AUTOMÁTICAMENTE AQUÍ
+                .password(passwordEncoder.encode("admin123"))
                 .rol(adminRol)
                 .activo(true)
                 .build();
@@ -79,6 +82,36 @@ public class DataSeeder implements CommandLineRunner {
             usuarioRepository.save(adminUsuario);
             System.out.println("====== DATA SEEDER CLÍNICO: Usuario 'admin' con clave 'admin123' creado con éxito ======");
         }
-    }
 
+        // 5. 🟢 NUEVO: Crear un Médico de prueba y su cuenta de Usuario vinculada
+        if (usuarioRepository.findByUsername("medico").isEmpty()) {
+            Rol medicoRol = rolRepository.findByNombre("MEDICO").orElseThrow();
+
+            // Creamos primero el registro hospitalario del médico base
+            Medico medicoPerfil = Medico.builder()
+                .nombre("Dr. Carlos Mendoza")
+                .matricula("MED-54321")
+                .genero("M")
+                .especialidad("Medicina Clínica")
+                .subEspecialidad("Cardiología")
+                .consultorio("Consultorio 05")
+                .estado("Activo")
+                .activo(true)
+                .build();
+            
+            medicoPerfil = medicoRepository.save(medicoPerfil);
+
+            // Creamos su cuenta de inicio de sesión apuntando al perfil creado
+            Usuario medicoUsuario = Usuario.builder()
+                .username("medico")
+                .password(passwordEncoder.encode("medico123")) // Encriptación automática
+                .rol(medicoRol)
+                .medico(medicoPerfil) // Vinculación estricta de la relación
+                .activo(true)
+                .build();
+
+            usuarioRepository.save(medicoUsuario);
+            System.out.println("====== DATA SEEDER CLÍNICO: Usuario 'medico' con clave 'medico123' vinculado al Dr. Carlos Mendoza ======");
+        }
+    }
 }

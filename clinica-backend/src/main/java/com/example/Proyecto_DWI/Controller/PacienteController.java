@@ -1,6 +1,8 @@
 package com.example.Proyecto_DWI.Controller;
 
 import com.example.Proyecto_DWI.Model.Paciente;
+import com.example.Proyecto_DWI.Model.Usuario;
+import com.example.Proyecto_DWI.Repository.UsuarioRepository;
 import com.example.Proyecto_DWI.Service.PacienteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,11 +21,17 @@ import java.util.Map;
 public class PacienteController {
 
     private final PacienteService pacienteService;
+    private final UsuarioRepository usuarioRepository;
 
     // Listar todos los pacientes
-    @GetMapping
-    public ResponseEntity<List<Paciente>> listarTodos() {
-        return ResponseEntity.ok(pacienteService.listarTodos());
+    public ResponseEntity<List<Paciente>> listar(Principal principal) {
+        String username = principal.getName();
+        Usuario usuario = usuarioRepository.findByUsername(username).orElseThrow();
+
+        String rol = usuario.getRol().getNombre(); // "ADMIN" o "MEDICO"
+        Long medicoId = (usuario.getMedico() != null) ? usuario.getMedico().getId() : null;
+
+        return ResponseEntity.ok(pacienteService.listarPorRol(username, rol, medicoId));
     }
 
     // Obtener un paciente por ID

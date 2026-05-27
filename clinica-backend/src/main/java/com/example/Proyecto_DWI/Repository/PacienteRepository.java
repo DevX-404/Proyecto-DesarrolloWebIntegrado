@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.Proyecto_DWI.Model.Paciente;
@@ -16,15 +17,18 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
     List<Paciente> findAllPacientesActivosClasificados();
 
     Optional<Paciente> findByDni(String dni);
-    
+
     List<Paciente> findByNombreContaining(String nombre);
 
     boolean existsByDni(String dni);
 
     List<Paciente> findByActivoTrue();
-    
+
     List<Paciente> findByActivoFalse();
 
     List<Paciente> findByActivoTrueAndNombreContaining(String nombre);
+
+    @Query("SELECT DISTINCT p FROM Paciente p JOIN CitaMedica c ON c.paciente.id = p.id WHERE c.medico.id = :medicoId")
+    List<Paciente> findPacientesPorMedico(@Param("medicoId") Long medicoId);
 
 }

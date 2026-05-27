@@ -9,7 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Email;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,7 +50,14 @@ public class Medico {
     @Builder.Default
     private Boolean activo = true;
 
+    @Transient
+    private Long pacientesHoy = 0L;
+
+    @Transient
+    private String proximaCita = "—";
+
     @OneToOne(mappedBy = "medico", fetch = FetchType.LAZY)
     @JsonIgnoreProperties("medico")
     private Usuario usuario;
+
 }

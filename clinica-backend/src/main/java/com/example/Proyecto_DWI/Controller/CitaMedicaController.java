@@ -34,10 +34,11 @@ public class CitaMedicaController {
         boolean disponible = citaMedicaService.validarDisponibilidad(cita.getMedico().getId(), cita.getFechaCita());
         if (!disponible) {
             Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "El médico seleccionado no cuenta con disponibilidad en la fecha u hora indicada.");
+            errorResponse.put("error",
+                    "El médico seleccionado no cuenta con disponibilidad en la fecha u hora indicada.");
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
-        
+
         CitaMedica nuevaCita = citaMedicaService.guardar(cita);
         return new ResponseEntity<>(nuevaCita, HttpStatus.CREATED);
     }
@@ -54,6 +55,12 @@ public class CitaMedicaController {
         Map<String, String> response = new HashMap<>();
         response.put("message", "Cita médica cancelada con éxito");
         return ResponseEntity.ok(response);
+    }
+
+    // Agrega este endpoint dentro de tu CitaMedicaController.java
+    @GetMapping("/medico/{medicoId}")
+    public ResponseEntity<List<CitaMedica>> listarPorMedico(@PathVariable Long medicoId) {
+        return ResponseEntity.ok(citaMedicaService.listarPorMedico(medicoId));
     }
 
 }

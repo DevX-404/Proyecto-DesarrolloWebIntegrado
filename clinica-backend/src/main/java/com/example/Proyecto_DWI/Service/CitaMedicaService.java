@@ -61,8 +61,17 @@ public class CitaMedicaService {
         LocalDateTime inicio = LocalDate.now().atStartOfDay();
         LocalDateTime fin = LocalDate.now().atTime(LocalTime.MAX);
         return citaMedicaRepository.findAll().stream()
-                .filter(c -> c.getFechaCita() != null && c.getFechaCita().isAfter(inicio) && c.getFechaCita().isBefore(fin))
+                .filter(c -> c.getFechaCita() != null && c.getFechaCita().isAfter(inicio)
+                        && c.getFechaCita().isBefore(fin))
                 .toList();
+    }
+
+    // Agrega esto dentro de tu CitaMedicaService.java
+    public List<CitaMedica> listarPorMedico(Long medicoId) {
+        // Retorna todas las citas asociadas a un médico en específico
+        return citaMedicaRepository.findAll().stream()
+                .filter(c -> c.getMedico().getId().equals(medicoId))
+                .collect(java.util.stream.Collectors.toList());
     }
 
 }

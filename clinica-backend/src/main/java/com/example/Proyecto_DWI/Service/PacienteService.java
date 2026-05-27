@@ -12,8 +12,12 @@ public class PacienteService {
 
     private final PacienteRepository pacienteRepository;
 
-    public List<Paciente> listarTodos() {
-        return pacienteRepository.findAll();
+    // En PacienteService.java
+    public List<Paciente> listarPorRol(String username, String role, Long medicoId) {
+        if ("MEDICO".equals(role)) {
+            return pacienteRepository.findPacientesPorMedico(medicoId);
+        }
+        return pacienteRepository.findAll(); // ADMIN ve todo
     }
 
     public Paciente buscarPorId(Long id) {
@@ -37,7 +41,7 @@ public class PacienteService {
         existente.setAntecedentes(paciente.getAntecedentes());
         existente.setCelular(paciente.getCelular());
         existente.setDireccion(paciente.getDireccion());
-        existente.setActivo(paciente.getActivo()); 
+        existente.setActivo(paciente.getActivo());
         return pacienteRepository.save(existente);
     }
 
@@ -46,7 +50,7 @@ public class PacienteService {
     }
 
     public long contarPacientesActivos() {
-        return pacienteRepository.count(); 
+        return pacienteRepository.count();
     }
 
 }
