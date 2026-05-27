@@ -14,7 +14,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -61,8 +63,18 @@ public class CitaMedica {
     @Column(length = 500)
     private String observaciones;
 
+    @NotBlank(message = "La prioridad de triaje es obligatoria")
+    private String prioridadTriaje; // ALTA, MEDIA, BAJA
+
     public enum EstadoCita {
         PENDIENTE, CONFIRMADA, CANCELADA, COMPLETADA
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.estado == null) {
+            this.estado = EstadoCita.PENDIENTE;
+        }
     }
 
 }

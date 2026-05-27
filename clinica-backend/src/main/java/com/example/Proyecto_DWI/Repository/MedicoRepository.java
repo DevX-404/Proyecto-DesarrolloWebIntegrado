@@ -13,8 +13,6 @@ public interface MedicoRepository extends JpaRepository<Medico, Long> {
 
     List<Medico> findByActivoTrue();
     List<Medico> findByActivoFalse();
-    
-    Optional<Medico> findByCmp(String cmp);
-    
-    boolean existsByCmp(String cmp);
+    Optional<Medico> findByMatricula(String matricula);
+    boolean existsByMatricula(String matricula);
 }

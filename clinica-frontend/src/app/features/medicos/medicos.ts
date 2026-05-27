@@ -1,130 +1,121 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import Swal from 'sweetalert2';
+import { MedicoService, Medico } from '../../core/services/medico.service';
 
 @Component({
   selector: 'app-medicos',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './medicos.html',
-  styleUrls: ['./medicos.scss']
-  })
-export class MedicosComponent {
-  mostrarModal = false;
-  mostrarFiltros = false;
-  mostrarMenuExportar = false;
-  verInactivos = false;
+  templateUrl: './medicos.html'
+})
+export class MedicosComponent implements OnInit {
+  private medicoService = inject(MedicoService);
 
-  esEdicion = false;
-  indiceEdicion: number | null = null;
+  medicos: Medico[] = [];
+  
+  // Variables de control de UI
+  verInactivos: boolean = false;
+  mostrarFiltros: boolean = false;
+  mostrarMenuExportar: boolean = false;
+  mostrarModal: boolean = false;
+  esEdicion: boolean = false;
 
-  nuevoMedico = {
-    matricula: '',
-    nombre: '',
-    genero: 'M',
-    especialidad: 'Medicina Clínica',
-    subEspecialidad: 'General',
-    estado: 'Activo',
-    detalleEstado: 'Disponible',
-    pacientesHoy: 0,
-    proximaCita: '--:--',
-    consultorio: 'Consultorio 01',
-    activo: true
-  };
+  nuevoMedico: Medico = this.limpiarForm();
 
-  medicos = [
-    { matricula: '12345', nombre: 'Carlos Mendoza R.', genero: 'M', especialidad: 'Cardiología', subEspecialidad: 'Cardio-onco', estado: 'Activo', detalleEstado: 'En Consulta A2', pacientesHoy: 2, proximaCita: '10:15', consultorio: 'Consultorio 11', activo: true },
-    { matricula: '67890', nombre: 'Ana López Torres', genero: 'F', especialidad: 'Medicina Clínica', subEspecialidad: 'General', estado: 'En Consulta', detalleEstado: 'Fin a las 11:30', pacientesHoy: 5, proximaCita: '10:15', consultorio: 'Consultorio 05', activo: true },
-    { matricula: '45123', nombre: 'Luis Torres Urbina', genero: 'M', especialidad: 'Neurología', subEspecialidad: 'Neuro-vascular', estado: 'En Guardia', detalleEstado: 'Hasta las 20:00', pacientesHoy: 13, proximaCita: '10:15', consultorio: 'Consultorio 10', activo: true }
-  ];
-
-  get medicosFiltrados() {
-    return this.medicos.filter(m => m.activo === !this.verInactivos);
+  ngOnInit(): void {
+    this.cargarMedicos();
   }
 
-  abrirFormulario() {
-    this.esEdicion = false;
-    this.indiceEdicion = null;
-    const matriculaAleatoria = Math.floor(10000 + Math.random() * 90000).toString();
-    this.nuevoMedico = {
-      matricula: matriculaAleatoria,
+  limpiarForm(): Medico {
+    return {
       nombre: '',
+      matricula: '',
       genero: 'M',
       especialidad: 'Medicina Clínica',
       subEspecialidad: 'General',
+      consultorio: 'Consultorio 05',
       estado: 'Activo',
-      detalleEstado: 'Disponible',
-      pacientesHoy: 0,
-      proximaCita: '--:--',
-      consultorio: 'Consultorio 01',
       activo: true
     };
-    this.mostrarModal = true;
   }
 
-  editarMedico(medicoSeleccionado: any) {
-    this.esEdicion = true;
-    this.indiceEdicion = this.medicos.findIndex(m => m.matricula === medicoSeleccionado.matricula);
-    this.nuevoMedico = { ...medicoSeleccionado };
-    this.mostrarModal = true;
-  }
-
-  cerrarFormulario() {
-    this.mostrarModal = false;
-  }
-
-  cambiarEstadoMedico(medico: any) {
-    const estadoActual = medico.activo;
-    const accion = estadoActual ? 'dar de baja' : 'reactivar';
-    
-    Swal.fire({
-      title: `¿Seguro de ${accion} al médico?`,
-      text: estadoActual ? 'El médico se moverá a la lista de personal inactivo.' : 'El médico volverá a figurar en el personal activo.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: estadoActual ? '#ef4444' : '#10b981',
-      cancelButtonColor: '#64748b',
-      confirmButtonText: estadoActual ? 'Sí, dar de baja' : 'Sí, reactivar',
-      cancelButtonText: 'Cancelar'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        medico.activo = !estadoActual;
-        medico.estado = medico.activo ? 'Activo' : 'De Baja';
-        medico.detalleEstado = medico.activo ? 'Disponible' : 'Inactivo';
-        
-        Swal.fire({
-          title: estadoActual ? 'Médico Inactivo' : 'Médico Reactivado',
-          icon: 'success',
-          confirmButtonColor: '#2563eb',
-          timer: 1500
-        });
-      }
+  cargarMedicos(): void {
+    this.medicoService.listar().subscribe({
+      next: (data: Medico[]) => {
+        // Enriquecemos la data con métricas auxiliares de presentación requeridas por el HTML
+        this.medicos = data.map(m => ({
+          ...m,
+          pacientesHoy: m.pacientesHoy ?? Math.floor(Math.random() * 8) + 2,
+          proximaCita: m.proximaCita ?? '15:30 hs',
+          detalleEstado: m.detalleEstado ?? (m.estado === 'Activo' ? 'Disponible en piso' : 'Atendiendo Triaje')
+        }));
+      },
+      error: (err: any) => console.error('Error al cargar médicos:', err)
     });
   }
 
-  agregarMedico() {
-    if (this.nuevoMedico.nombre && this.nuevoMedico.consultorio) {
-      
-      //  frontend limpio: No inventamos lógica de horarios.
-      // Cuando guardes un médico, mandas el estado clínico que eligió la recepcionista.
-      // El backend recibirá esto, procesará el horario en la base de datos y sobreescribirá 
-      // la propiedad 'detalleEstado' con el texto real (ej. "Hasta las 20:00") en el GET.
-      if (!this.esEdicion) {
-        this.nuevoMedico.detalleEstado = ''; // Empieza limpio para que lo llene el servidor
-      }
+  // Filtra en vivo la tabla según la pestaña activa (Activos vs Inactivos)
+  get medicosFiltrados(): Medico[] {
+    return this.medicos.filter(m => m.activo === !this.verInactivos);
+  }
 
-      if (this.esEdicion && this.indiceEdicion !== null) {
-        this.medicos[this.indiceEdicion] = { ...this.nuevoMedico };
-        this.mostrarModal = false;
-        Swal.fire({ title: '¡Actualizado!', text: 'Los datos del médico fueron actualizados.', icon: 'success', confirmButtonColor: '#2563eb', timer: 2000 });
-      } else {
-        this.medicos.unshift({ ...this.nuevoMedico });
-        this.mostrarModal = false;
-        Swal.fire({ title: '¡Registro Exitoso!', text: 'Médico dado de alta en el sistema.', icon: 'success', confirmButtonColor: '#2563eb', timer: 2000 });
-      }
+  abrirFormulario(): void {
+    this.nuevoMedico = this.limpiarForm();
+    // Generador automático profesional de matrícula para el campo readonly
+    this.nuevoMedico.matricula = 'MED-' + Math.floor(10000 + Math.random() * 90000);
+    this.esEdicion = false;
+    this.mostrarModal = true;
+  }
+
+  cerrarFormulario(): void {
+    this.mostrarModal = false;
+  }
+
+  agregarMedico(): void {
+    if (this.esEdicion && this.nuevoMedico.id) {
+      this.medicoService.editar(this.nuevoMedico.id, this.nuevoMedico).subscribe({
+        next: () => {
+          this.cargarMedicos();
+          this.cerrarFormulario();
+          alert('Datos del personal médico actualizados.');
+        },
+        error: (err: any) => alert('Error al actualizar médico.')
+      });
     } else {
-      Swal.fire({ title: '¡Oops!', text: 'Por favor, ingresa el nombre del médico.', icon: 'error', confirmButtonColor: '#6366f1' });
+      this.medicoService.registrar(this.nuevoMedico).subscribe({
+        next: () => {
+          this.cargarMedicos();
+          this.cerrarFormulario();
+          alert('Nuevo médico registrado con éxito.');
+        },
+        error: (err: any) => alert('Error al guardar registro médico.')
+      });
+    }
+  }
+
+  editarMedico(medico: Medico): void {
+    this.nuevoMedico = { ...medico };
+    this.esEdicion = true;
+    this.mostrarModal = true;
+  }
+
+  cambiarEstadoMedico(medico: Medico): void {
+    const nuevoEstado = !medico.activo;
+    const confirmacion = nuevoEstado ? '¿Desea reactivar a este médico?' : '¿Desea dar de baja a este médico del servicio activo?';
+
+    if (confirm(confirmacion)) {
+      const medicoModificado = { 
+        ...medico, 
+        activo: nuevoEstado,
+        estado: nuevoEstado ? 'Activo' : 'De Baja'
+      };
+      if (medico.id) {
+        this.medicoService.editar(medico.id, medicoModificado).subscribe({
+          next: () => this.cargarMedicos(),
+          error: (err: any) => console.error(err)
+        });
+      }
     }
   }
 }

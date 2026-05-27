@@ -27,9 +27,11 @@ public class MedicoService {
     public Medico actualizar(Long id, Medico medico) {
         Medico existente = buscarPorId(id);
         existente.setNombre(medico.getNombre());
-        existente.setApellido(medico.getApellido());
         existente.setEspecialidad(medico.getEspecialidad());
-        existente.setCmp(medico.getCmp());
+        existente.setSubEspecialidad(medico.getSubEspecialidad());
+        existente.setConsultorio(medico.getConsultorio());
+        existente.setEstado(medico.getEstado());
+        existente.setActivo(medico.getActivo());
         return medicoRepository.save(existente);
     }
 
@@ -37,7 +39,6 @@ public class MedicoService {
         medicoRepository.deleteById(id);
     }
 
-    // Método analítico para el Dashboard
     public long contarMedicosActivos() {
         return medicoRepository.count();
     }

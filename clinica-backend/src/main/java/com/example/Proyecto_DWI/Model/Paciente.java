@@ -34,43 +34,48 @@ public class Paciente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "Se requiere nombre")
-    @Column(nullable = false, length = 100)
+    @NotNull(message = "Se requiere nombre completo")
+    @Column(nullable = false, length = 200)
     private String nombre;
 
-    @NotNull(message = "Se requiere apellido")
-    @Column(nullable = false, length = 100)
-    private String apellido;
+    @Column(unique = true, length = 20)
+    private String historia; // Código automático: HC-DNI
 
     @NotNull(message = "DNI es obligatorio")
     @Pattern(regexp = "\\d{8}", message = "El DNI debe ser exactamente 8 números")
     @Column(nullable = false, unique = true, length = 8)
     private String dni;
 
-    @NotNull(message = "Se requiere el telefono")
-    @Pattern(regexp = "^(9\\d{8})?$", message = "El teléfono debe empezar con 9 y tener 9 dígitos o quedar vacío")
-    private String telefono;
+    private String edad;
+    
+    private String tipoEdad; // "Años" o "Meses"
+    
+    private String genero; // "M" o "F"
+    
+    private String triaje; // "Estable", "Observación", "Urgencia"
 
-    @NotNull(message = "El email es obligatorio")
-    @Email(message = "Email no tiene formato correcto")
-    @Column(unique = true)
-    private String email;
+    @Column(columnDefinition = "TEXT")
+    private String alergias;
 
-    @NotNull(message = "La fecha de nacimiento es obligatoria")
-    @Past(message = "La fecha de nacimiento debe ser una fecha pasada")
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    @Column(name = "fecha_nacimiento")
-    private LocalDate fechaNacimiento;
+    @Column(columnDefinition = "TEXT")
+    private String antecedentes;
 
-    @NotNull(message = "La fecha de alta es obligatoria")
+    private String celular;
+    
+    private String direccion;
+
     @Column(name = "fecha_registro", updatable = false)
     private LocalDate fechaRegistro;
 
-    private boolean activo = true;
+    @Builder.Default
+    private Boolean activo = true;
 
     @PrePersist
     public void prePersist() {
         this.fechaRegistro = LocalDate.now();
+        if (this.historia == null || this.historia.isEmpty()) {
+            this.historia = "HC-" + this.dni;
+        }
     }
 
 }

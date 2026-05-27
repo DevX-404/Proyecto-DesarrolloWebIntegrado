@@ -1,0 +1,118 @@
+<div class="p-4 bg-slate-50 min-h-screen text-xs">
+  <div class="mb-5">
+    <h1 class="text-base font-bold text-slate-800 tracking-tight">Gestión de Citas Médicas</h1>
+    <p class="text-[11px] text-slate-400">Asignación de pacientes, médicos y control de triaje.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm h-fit">
+      <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-4 border-b pb-2">Programar Nueva Cita</h2>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Paciente *</label>
+          <select [(ngModel)]="pacienteId" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 font-medium text-slate-700">
+            <option [ngValue]="null" disabled>Seleccione un paciente admitido</option>
+            @for (p of pacientes; track p.id) {
+              <option [ngValue]="p.id">{{ p.nombre }} (DNI: {{ p.dni }})</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Médico Especialista *</label>
+          <select [(ngModel)]="medicoId" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 font-medium text-slate-700">
+            <option [ngValue]="null" disabled>Seleccione un médico</option>
+            @for (m of medicos; track m.id) {
+              <option [ngValue]="m.id">{{ m.nombre }} — {{ m.especialidad }} ({{ m.consultorio }})</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fecha y Hora de la Cita *</label>
+          <input type="datetime-local" [(ngModel)]="fechaCita" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 font-medium text-slate-700" />
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Motivo de la Consulta *</label>
+          <select [(ngModel)]="motivo" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 font-medium text-slate-700">
+            <option value="" disabled>Seleccione el motivo médico</option>
+            <option value="Consulta General">Consulta de Control General</option>
+            <option value="Evaluación de Triaje">Evaluación de Triaje Especializado</option>
+            <option value="Lectura de Exámenes">Lectura de Exámenes / Laboratorio</option>
+            <option value="Atención de Urgencia">Atención por Sintomatología Aguda</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Prioridad de Triaje</label>
+          <select [(ngModel)]="prioridadTriaje" class="w-full text-xs p-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 font-bold"
+                  [ngClass]="{'text-emerald-600': prioridadTriaje === 'BAJA', 'text-amber-500': prioridadTriaje === 'MEDIA', 'text-red-500': prioridadTriaje === 'ALTA'}">
+            <option value="BAJA" class="text-slate-700 font-medium">BAJA / RUTINA</option>
+            <option value="MEDIA" class="text-slate-700 font-medium">MEDIA / URGENCIA</option>
+            <option value="ALTA" class="text-slate-700 font-medium">ALTA / EMERGENCIA</option>
+          </select>
+        </div>
+
+        <button (click)="agendar()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-md transition-all active:scale-95">
+          Agendar Cita Médica
+        </button>
+      </div>
+    </div>
+
+    <div class="lg:col-span-2 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-4 border-b pb-2">Historial de Consultas Activas</h2>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 text-[10px] uppercase font-bold text-slate-400 bg-slate-50/70">
+              <th class="p-3">Paciente</th>
+              <th class="p-3">Médico / Especialidad</th>
+              <th class="p-3">Fecha y Hora</th>
+              <th class="p-3">Triaje</th>
+              <th class="p-3 text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-600">
+            @for (c of citas; track c.id) {
+              <tr class="hover:bg-slate-50/40 transition-colors">
+                <td class="p-3">
+                  <div class="font-bold text-slate-800">{{ c.paciente?.nombre }}</div>
+                  <div class="text-[10px] text-slate-400 font-mono">HC: {{ c.paciente?.historia }}</div>
+                </td>
+                <td class="p-3">
+                  <div class="font-bold text-slate-700">{{ c.medico?.nombre }}</div>
+                  <div class="text-[10px] text-slate-400 font-medium">{{ c.medico?.especialidad }} ({{ c.medico?.consultorio }})</div>
+                </td>
+                <td class="p-3 font-mono text-slate-500 font-medium">
+                  {{ c.fechaCita | date:'dd/MM/yyyy HH:mm' }}
+                </td>
+                <td class="p-3">
+                  <span class="px-2 py-0.5 rounded text-[9px] font-bold block w-24 text-center border shadow-sm" 
+                        [ngClass]="{
+                          'bg-red-500 text-white border-red-600': c.prioridadTriaje === 'ALTA', 
+                          'bg-amber-500 text-white border-amber-600': c.prioridadTriaje === 'MEDIA', 
+                          'bg-emerald-500 text-white border-emerald-600': c.prioridadTriaje === 'BAJA'
+                        }">
+                    {{ c.prioridadTriaje }}
+                  </span>
+                </td>
+                <td class="p-3 text-center">
+                  <button (click)="cancelar(c.id)" class="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-md font-bold transition-all active:scale-95">
+                    Cancelar
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="p-4 text-center text-slate-400 text-xs italic">No hay citas médicas agendadas en el sistema.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

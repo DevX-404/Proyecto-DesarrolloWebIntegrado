@@ -28,23 +28,27 @@ public class Medico {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El nombre es obligatorio")
-    private String nombre;
+    @NotBlank(message = "El nombre completo es obligatorio")
+    private String nombre; // Recibe "Dr. Carlos Mendoza"
 
-    @NotBlank(message = "El apellido es obligatorio")
-    private String apellido;
+    @NotBlank(message = "La matrícula es obligatoria")
+    @Column(unique = true, length = 20)
+    private String matricula; // Reemplaza al viejo CMP para alinearse al HTML
+
+    private String genero; // "M" o "F"
 
     @NotBlank(message = "La especialidad es obligatoria")
     private String especialidad;
 
-    @NotBlank(message = "El CMP es obligatorio")
-    @Column(unique = true, length = 10)
-    private String cmp; 
+    private String subEspecialidad;
 
-    @Email(message = "El formato del email no es correcto")
-    private String email;
+    @NotBlank(message = "El consultorio es obligatorio")
+    private String consultorio;
 
-    private boolean activo = true;
+    private String estado; // "Activo", "En Consulta", "En Guardia", "De Baja"
+
+    @Builder.Default
+    private Boolean activo = true;
 
     @OneToOne(mappedBy = "medico", fetch = FetchType.LAZY)
     @JsonIgnoreProperties("medico")

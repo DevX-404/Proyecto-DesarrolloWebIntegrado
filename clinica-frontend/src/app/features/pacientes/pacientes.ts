@@ -1,153 +1,124 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import Swal from 'sweetalert2';
+import { PacienteService, Paciente } from '../../core/services/paciente.service';
 
 @Component({
   selector: 'app-pacientes',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './pacientes.html',
-  styleUrls: ['./pacientes.scss']
+  templateUrl: './pacientes.html'
 })
-export class PacientesComponent {
-  mostrarModal = false;
-  mostrarFiltros = false;
-  mostrarMenuExportar = false;
+export class PacientesComponent implements OnInit {
+  private pacienteService = inject(PacienteService);
+
+  pacientes: Paciente[] = [];
   
-  mostrarHistorial = false;
-  pacienteSeleccionadoHistorial: any = null;
-  esEdicion = false;
-  indiceEdicion: number | null = null;
-  verInactivos = false;
+  // Variables de control de interfaz de usuario (UI)
+  verInactivos: boolean = false;
+  mostrarFiltros: boolean = false;
+  mostrarMenuExportar: boolean = false;
+  mostrarModal: boolean = false;
+  esEdicion: boolean = false;
+  mostrarHistorial: boolean = false;
 
-  nuevoPaciente = {
-    historia: '',
-    dni: '',
-    nombre: '',
-    genero: 'M',
-    edad: '',
-    tipoEdad: 'Años',
-    triaje: 'Estable',
-    celular: '',
-    direccion: '',
-    email: '',
-    ultimaVisita: '26/05/2026',
-    alergias: '',
-    antecedentes: '',
-    notasMedicas: 'Paciente ingresado por admisión general.',
-    activo: true
-  };
+  // Objetos enlazados a los modales del formulario e historial
+  nuevoPaciente: Paciente = this.limpiarForm();
+  pacienteSeleccionadoHistorial: Paciente | null = null;
 
-  pacientes = [
-    { 
-      historia: 'HC-9421', dni: '74829104', nombre: 'Juan Pérez Silva', genero: 'M', edad: '42', tipoEdad: 'Años', triaje: 'Estable', celular: '987654321', direccion: 'Av. Larco 456', email: 'juan.perez@gmail.com', ultimaVisita: '20/05/2026',
-      antecedentes: 'Hipertensión arterial controlada.', alergias: 'Penicilina', notasMedicas: 'Control anual de riesgo cardiovascular.', activo: true
-    },
-    { 
-      historia: 'HC-8832', dni: '45928173', nombre: 'María Ramos Delgado', genero: 'F', edad: '28', tipoEdad: 'Años', triaje: 'Observación', celular: '951753852', direccion: 'Calle Balta 123', email: 'maria.ramos@outlook.com', ultimaVisita: '22/05/2026',
-      antecedentes: 'Asma bronquial en la infancia.', alergias: 'Polen y ácaros', notasMedicas: 'Ingresa por cuadro de fatiga y dolor de cabeza.', activo: true
-    },
-    { 
-      historia: 'HC-7104', dni: '09384721', nombre: 'Jorge Castro Rivas', genero: 'M', edad: '65', tipoEdad: 'Años', triaje: 'Urgencia', celular: '', direccion: 'Urb. Las Brisas Mz C', email: '', ultimaVisita: '24/05/2026',
-      antecedentes: 'Diabetes Tipo 2.', alergias: 'Ninguna conocida', notasMedicas: 'Paciente ingresa con picos elevados de glucosa.', activo: true
-    }
-  ];
+  ngOnInit(): void {
+    this.cargarPacientes();
+  }
 
+  limpiarForm(): Paciente {
+    return {
+      nombre: '',
+      dni: '',
+      edad: '',
+      tipoEdad: 'Años',
+      genero: 'M',
+      triaje: 'Estable',
+      alergias: '',
+      antecedentes: '',
+      celular: '',
+      direccion: '',
+      activo: true
+    };
+  }
 
-  get pacientesFiltrados() {
+  cargarPacientes(): void {
+    this.pacienteService.listar().subscribe({
+      next: (data: Paciente[]) => this.pacientes = data,
+      error: (err: any) => console.error('Error al obtener la lista de pacientes:', err)
+    });
+  }
+
+  // Filtra en caliente la tabla dependiendo si se presionó "Ver Inactivos" o "Ver Admitidos"
+  get pacientesFiltrados(): Paciente[] {
     return this.pacientes.filter(p => p.activo === !this.verInactivos);
   }
 
-  abrirFormulario() {
+  abrirFormulario(): void {
+    this.nuevoPaciente = this.limpiarForm();
     this.esEdicion = false;
-    this.indiceEdicion = null;
-    const numeroAleatorio = Math.floor(1000 + Math.random() * 9000);
-    this.nuevoPaciente = {
-      historia: `HC-${numeroAleatorio}`,
-      dni: '',
-      nombre: '',
-      genero: 'M',
-      edad: '',
-      tipoEdad: 'Años',
-      triaje: 'Estable',
-      celular: '',
-      direccion: '',
-      email: '',
-      ultimaVisita: '26/05/2026',
-      alergias: '',
-      antecedentes: '',
-      notasMedicas: 'Paciente ingresado por admisión general.',
-      activo: true
-    };
     this.mostrarModal = true;
   }
 
-  editarPaciente(pacienteSeleccionado: any, index: number) {
+  cerrarFormulario(): void {
+    this.mostrarModal = false;
+  }
+
+  agregarPaciente(): void {
+    if (this.esEdicion && this.nuevoPaciente.id) {
+      this.pacienteService.editar(this.nuevoPaciente.id, this.nuevoPaciente).subscribe({
+        next: () => {
+          this.cargarPacientes();
+          this.cerrarFormulario();
+          alert('Expediente de paciente actualizado.');
+        },
+        error: (err: any) => alert('Error al editar paciente.')
+      });
+    } else {
+      this.pacienteService.registrar(this.nuevoPaciente).subscribe({
+        next: () => {
+          this.cargarPacientes();
+          this.cerrarFormulario();
+          alert('Paciente admitido correctamente.');
+        },
+        error: (err: any) => alert('Error al registrar la admisión.')
+      });
+    }
+  }
+
+  editarPaciente(paciente: Paciente, index: number): void {
+    this.nuevoPaciente = { ...paciente };
     this.esEdicion = true;
-    // Buscamos el índice real dentro del array original de pacientes
-    this.indiceEdicion = this.pacientes.findIndex(p => p.historia === pacienteSeleccionado.historia);
-    this.nuevoPaciente = { ...pacienteSeleccionado };
     this.mostrarModal = true;
   }
 
-  verHistorialClinico(paciente: any) {
+  // Maneja la baja lógica o reactivación del paciente actualizando el estado 'activo'
+  cambiarEstadoPaciente(paciente: Paciente): void {
+    const nuevoEstado = !paciente.activo;
+    const mensaje = nuevoEstado ? '¿Desea reactivar a este paciente?' : '¿Desea dar de baja a este paciente del sistema?';
+    
+    if (confirm(mensaje)) {
+      const pacienteModificado = { ...paciente, activo: nuevoEstado };
+      if (paciente.id) {
+        this.pacienteService.editar(paciente.id, pacienteModificado).subscribe({
+          next: () => this.cargarPacientes(),
+          error: (err: any) => console.error(err)
+        });
+      }
+    }
+  }
+
+  verHistorialClinico(paciente: Paciente): void {
     this.pacienteSeleccionadoHistorial = paciente;
     this.mostrarHistorial = true;
   }
 
-  cerrarHistorial() {
+  cerrarHistorial(): void {
     this.mostrarHistorial = false;
     this.pacienteSeleccionadoHistorial = null;
-  }
-
-  cambiarEstadoPaciente(paciente: any) {
-    const estadoActual = paciente.activo;
-    const accion = estadoActual ? 'dar de baja' : 'reactivar';
-    
-    Swal.fire({
-      title: `¿Seguro de ${accion} al paciente?`,
-      text: estadoActual ? 'El paciente se moverá a la lista de inactivos.' : 'El paciente volverá a la lista de activos.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: estadoActual ? '#ef4444' : '#10b981',
-      cancelButtonColor: '#64748b',
-      confirmButtonText: estadoActual ? 'Sí, dar de baja' : 'Sí, reactivar',
-      cancelButtonText: 'Cancelar'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        paciente.activo = !estadoActual;
-        Swal.fire({
-          title: estadoActual ? 'Paciente Inactivo' : 'Paciente Reactivado',
-          text: `El estado del paciente ha sido actualizado.`,
-          icon: 'success',
-          confirmButtonColor: '#2563eb',
-          timer: 1500
-        });
-      }
-    });
-  }
-
-  cerrarFormulario() {
-    this.mostrarModal = false;
-  }
-
-  agregarPaciente() {
-    if (this.nuevoPaciente.nombre && this.nuevoPaciente.dni && this.nuevoPaciente.edad) {
-      if (!this.nuevoPaciente.alergias.trim()) this.nuevoPaciente.alergias = 'Ninguna conocida';
-      if (!this.nuevoPaciente.antecedentes.trim()) this.nuevoPaciente.antecedentes = 'Ninguno registrado';
-
-      if (this.esEdicion && this.indiceEdicion !== null) {
-        this.pacientes[this.indiceEdicion] = { ...this.nuevoPaciente };
-        this.mostrarModal = false;
-        Swal.fire({ title: '¡Actualizado!', text: 'Los datos fueron actualizados correctamente.', icon: 'success', confirmButtonColor: '#2563eb', timer: 2000 });
-      } else {
-        this.pacientes.unshift({ ...this.nuevoPaciente });
-        this.mostrarModal = false;
-        Swal.fire({ title: '¡Admisión Exitosa!', text: 'El paciente ha sido registrado en el sistema.', icon: 'success', confirmButtonColor: '#2563eb', timer: 2000 });
-      }
-    } else {
-      Swal.fire({ title: '¡Oops!', text: 'Por favor, completa los datos obligatorios.', icon: 'error', confirmButtonColor: '#6366f1' });
-    }
   }
 }

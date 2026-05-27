@@ -16,10 +16,8 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
     List<Paciente> findAllPacientesActivosClasificados();
 
     Optional<Paciente> findByDni(String dni);
-
-    Optional<Paciente> findByEmail(String email);
-
-    List<Paciente> findByNombreContainingOrApellidoContaining(String nombre, String apellido);
+    
+    List<Paciente> findByNombreContaining(String nombre);
 
     boolean existsByDni(String dni);
 
@@ -27,6 +25,6 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
     
     List<Paciente> findByActivoFalse();
 
-    List<Paciente> findByActivoTrueAndNombreContainingOrActivoTrueAndApellidoContaining(String nombre, String apellido);
+    List<Paciente> findByActivoTrueAndNombreContaining(String nombre);
 
 }

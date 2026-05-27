@@ -28,11 +28,16 @@ public class PacienteService {
     public Paciente actualizar(Long id, Paciente paciente) {
         Paciente existente = buscarPorId(id);
         existente.setNombre(paciente.getNombre());
-        existente.setApellido(paciente.getApellido());
         existente.setDni(paciente.getDni());
-        existente.setTelefono(paciente.getTelefono());
-        existente.setEmail(paciente.getEmail());
-        existente.setFechaNacimiento(paciente.getFechaNacimiento());
+        existente.setEdad(paciente.getEdad());
+        existente.setTipoEdad(paciente.getTipoEdad());
+        existente.setGenero(paciente.getGenero());
+        existente.setTriaje(paciente.getTriaje());
+        existente.setAlergias(paciente.getAlergias());
+        existente.setAntecedentes(paciente.getAntecedentes());
+        existente.setCelular(paciente.getCelular());
+        existente.setDireccion(paciente.getDireccion());
+        existente.setActivo(paciente.getActivo()); 
         return pacienteRepository.save(existente);
     }
 
@@ -40,7 +45,6 @@ public class PacienteService {
         pacienteRepository.deleteById(id);
     }
 
-    // Método analítico para el Dashboard
     public long contarPacientesActivos() {
         return pacienteRepository.count(); 
     }

@@ -15,7 +15,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/citas")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 public class CitaMedicaController {
 
     private final CitaMedicaService citaMedicaService;
@@ -32,7 +31,6 @@ public class CitaMedicaController {
 
     @PostMapping
     public ResponseEntity<?> crearCita(@Valid @RequestBody CitaMedica cita) {
-        // REQUISITO: Validar disponibilidad básica antes de registrar en la BD
         boolean disponible = citaMedicaService.validarDisponibilidad(cita.getMedico().getId(), cita.getFechaCita());
         if (!disponible) {
             Map<String, String> errorResponse = new HashMap<>();
