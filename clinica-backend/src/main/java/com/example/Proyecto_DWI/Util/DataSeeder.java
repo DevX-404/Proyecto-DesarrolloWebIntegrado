@@ -1,6 +1,7 @@
 package com.example.Proyecto_DWI.Util;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.example.Proyecto_DWI.Model.Permiso;
@@ -23,6 +24,7 @@ public class DataSeeder implements CommandLineRunner {
     private final RolRepository rolRepository;
     private final PermisoRepository permisoRepository;
     private final RolPermisoRepository rolPermisoRepository; 
+    private final PasswordEncoder passwordEncoder; // 2. INYÉCTALO AQUÍ EN EL CONSTRUCTOR
 
     @Override
     public void run(String... args) throws Exception {
@@ -44,7 +46,7 @@ public class DataSeeder implements CommandLineRunner {
             Rol medicoRol = Rol.builder().nombre("MEDICO").activo(true).build();
             rolRepository.saveAll(Arrays.asList(adminRol, medicoRol));
 
-            // 3. Asignar Permisos Dinámicos (Estructura RBAC comercial de tu referencia)
+            // 3. Asignar Permisos Dinámicos
             Permiso pDashboard = permisoRepository.findAll().stream().filter(p -> p.getNombre().equals("ACCESO_DASHBOARD")).findFirst().get();
             Permiso pPacientes = permisoRepository.findAll().stream().filter(p -> p.getNombre().equals("GESTION_PACIENTES")).findFirst().get();
             Permiso pMedicos = permisoRepository.findAll().stream().filter(p -> p.getNombre().equals("GESTION_MEDICOS")).findFirst().get();
@@ -69,7 +71,7 @@ public class DataSeeder implements CommandLineRunner {
             
             Usuario adminUsuario = Usuario.builder()
                 .username("admin")
-                .password("$2a$10$vXbSmvMvO.6bHREt9bWvSuXGf8Vb7K6CgD9mGexR2h9E6p7K76zXy") // Contraseña "admin123" encriptada en BCrypt
+                .password(passwordEncoder.encode("admin123")) // 3. ENCRÍPTALO AUTOMÁTICAMENTE AQUÍ
                 .rol(adminRol)
                 .activo(true)
                 .build();

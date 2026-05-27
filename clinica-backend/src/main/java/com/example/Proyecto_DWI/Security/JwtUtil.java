@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,7 +17,8 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    private final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private static final String SECRET_STRING = "ClaveSecretaUltraSeguraFijaDe256BitsParaElConsultorioChiclayo2026";
+    private final Key SECRET_KEY = Keys.hmacShaKeyFor(SECRET_STRING.getBytes(StandardCharsets.UTF_8));
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
