@@ -40,7 +40,6 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 🔑 RESTAURADO:hasAnyRole valida correctamente usando el prefijo ROLE_ interno
                         // Permitir listar médicos (GET) tanto a ADMIN como a MEDICO
                         .requestMatchers(HttpMethod.GET, "/api/medicos/**").hasAnyRole("ADMIN", "MEDICO")
                         

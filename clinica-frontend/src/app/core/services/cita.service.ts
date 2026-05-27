@@ -26,4 +26,13 @@ export class CitaService {
   listarMisCitas(): Observable<CitaMedica[]> {
     return this.http.get<CitaMedica[]>(`${this.apiUrl}/mis-citas`);
   }
+  // Actualizar una cita existente
+  actualizarCita(id: number, cita: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, cita);
+  }
+
+  // Cancelar la cita (Ojo: el backend pide un PUT a /{id}/cancelar)
+  cancelarCita(id: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}/cancelar`, {});
+  }
 }
