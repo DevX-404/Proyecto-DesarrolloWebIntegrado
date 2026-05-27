@@ -12,12 +12,10 @@ import { DashboardService } from '../../core/services/dashboard.service';
 export class DashboardComponent implements OnInit {
   private dashboardService = inject(DashboardService);
 
-  // Esta es la lista que lee el HTML de tu pareja
   tarjetas: any[] = [];
   cargando = true;
   errorOcurrido = false;
 
-  // CORRECCIÓN DEL ERROR: Cambiado de ': OnInit' a ': void'
   ngOnInit(): void {
     this.cargarMetricasClinicas();
   }
@@ -25,7 +23,6 @@ export class DashboardComponent implements OnInit {
   cargarMetricasClinicas(): void {
     this.dashboardService.getMetrics().subscribe({
       next: (data) => {
-        // Mapeamos los datos del backend en la estructura exacta que inventó tu pareja
         this.tarjetas = [
           { 
             titulo: 'Total Pacientes', 

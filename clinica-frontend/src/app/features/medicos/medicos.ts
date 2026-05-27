@@ -41,27 +41,24 @@ export class MedicosComponent implements OnInit {
   }
 
   cargarMedicos(): void {
-    // En medicos.ts cambia la asignación para leer la data pura del backend:
     this.medicoService.listar().subscribe({
       next: (data: Medico[]) => {
         this.medicos = data.map(m => ({
           ...m,
-          pacientesHoy: m.pacientesHoy, // Lee el cálculo de Spring
-          proximaCita: m.proximaCita,   // Lee la fecha formateada de Spring
+          pacientesHoy: m.pacientesHoy, 
+          proximaCita: m.proximaCita, 
           detalleEstado: m.estado === 'Activo' ? 'Disponible en piso' : 'Atendiendo Consulta'
         }));
       }
     });
   }
 
-  // Filtra en vivo la tabla según la pestaña activa (Activos vs Inactivos)
   get medicosFiltrados(): Medico[] {
     return this.medicos.filter(m => m.activo === !this.verInactivos);
   }
 
   abrirFormulario(): void {
     this.nuevoMedico = this.limpiarForm();
-    // Generador automático profesional de matrícula para el campo readonly
     this.nuevoMedico.matricula = 'MED-' + Math.floor(10000 + Math.random() * 90000);
     this.esEdicion = false;
     this.mostrarModal = true;

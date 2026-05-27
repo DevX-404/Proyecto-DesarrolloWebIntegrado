@@ -27,13 +27,11 @@ export class LayoutComponent implements OnInit {
   }
 
   obtenerDatosDeSesion(): void {
-    // 1. Primero intentamos jalar el nombre directamente si se guardó en el login
     const usuarioGuardado = localStorage.getItem('username');
     if (usuarioGuardado) {
       this.username = usuarioGuardado;
     }
 
-    // 2. Si no, lo extraemos decodificando el sub del Token JWT por seguridad
     const token = localStorage.getItem('token');
     if (token) {
       try {
@@ -45,7 +43,7 @@ export class LayoutComponent implements OnInit {
 
         const payload = JSON.parse(jsonPayload);
         if (payload.sub) {
-          this.username = payload.sub; // Guarda "admin" o "medico"
+          this.username = payload.sub; 
         }
       } catch (e) {
         console.error('Error decodificando el token:', e);
@@ -54,25 +52,20 @@ export class LayoutComponent implements OnInit {
   }
 
   configurarMenuPorNombreUsuario(): void {
-    // Definición de iconos SVG limpios
     const iconDashboard = 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6';
     const iconPacientes = 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z';
     const iconMedicos = 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2';
     const iconCitas = 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z';
 
-    // Convertimos a minúsculas para evitar fallos por espacios o caracteres
     const usuarioLimpio = this.username.toLowerCase().trim();
 
-    // 🟢 SEGMENTACIÓN DE VISTAS POR NOMBRE DE CUENTA EN TIEMPO REAL
     if (usuarioLimpio === 'medico') {
-      // Menú exclusivo para el perfil del Doctor Mendoza
       this.menuItems = [
         { label: 'Dashboard', route: '/dashboard', icon: iconDashboard },
         { label: 'Mis Pacientes', route: '/pacientes', icon: iconPacientes },
         { label: 'Mi Agenda Médica', route: '/mis-citas', icon: iconCitas }
       ];
     } else {
-      // Menú completo para la cuenta 'admin' y cualquier otro gestor
       this.menuItems = [
         { label: 'Dashboard', route: '/dashboard', icon: iconDashboard },
         { label: 'Pacientes', route: '/pacientes', icon: iconPacientes },

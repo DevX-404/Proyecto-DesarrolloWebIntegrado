@@ -55,7 +55,6 @@ public class CitaMedicaService {
         return citaMedicaRepository.count();
     }
 
-    // ✅ LO QUE DEBES PONER
     public List<CitaMedica> obtenerCitasDeHoy() {
         LocalDateTime inicio = LocalDate.now().atStartOfDay();
         LocalDateTime fin = LocalDate.now().atTime(LocalTime.MAX);

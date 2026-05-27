@@ -83,7 +83,7 @@ public class DataSeeder implements CommandLineRunner {
             System.out.println("====== DATA SEEDER CLÍNICO: Usuario 'admin' con clave 'admin123' creado con éxito ======");
         }
 
-        // 5. 🟢 NUEVO: Crear un Médico de prueba y su cuenta de Usuario vinculada
+        // 5. Crear un Médico de prueba y su cuenta de Usuario vinculada
         if (usuarioRepository.findByUsername("medico").isEmpty()) {
             Rol medicoRol = rolRepository.findByNombre("MEDICO").orElseThrow();
 
@@ -104,9 +104,9 @@ public class DataSeeder implements CommandLineRunner {
             // Creamos su cuenta de inicio de sesión apuntando al perfil creado
             Usuario medicoUsuario = Usuario.builder()
                 .username("medico")
-                .password(passwordEncoder.encode("medico123")) // Encriptación automática
+                .password(passwordEncoder.encode("medico123")) 
                 .rol(medicoRol)
-                .medico(medicoPerfil) // Vinculación estricta de la relación
+                .medico(medicoPerfil) 
                 .activo(true)
                 .build();
 

@@ -14,7 +14,7 @@ import { MedicoService, Medico } from '../../../core/services/medico.service';
   templateUrl: './citas.html'
 })
 export class CitasComponent implements OnInit {
-  idCitaEdicion: number | null = null; // 🌟 Controla si estamos creando o editando
+  idCitaEdicion: number | null = null; 
   private citaService = inject(CitaService);
   private pacienteService = inject(PacienteService);
   private medicoService = inject(MedicoService);
@@ -52,7 +52,6 @@ export class CitasComponent implements OnInit {
     });
   }
 
-  // 🌟 MODIFICADO: Ahora este método decide si CREA o ACTUALIZA según idCitaEdicion
   agendar(): void {
     if (!this.pacienteId || !this.medicoId || !this.fechaCita || !this.motivo.trim()) {
       alert('Por favor complete todos los datos, incluyendo el motivo de la consulta.');
@@ -60,7 +59,7 @@ export class CitasComponent implements OnInit {
     }
 
     const citaPayload: CitaMedica = {
-      id: this.idCitaEdicion || undefined, // Si estamos editando, le mandamos su ID
+      id: this.idCitaEdicion || undefined, 
       paciente: { id: this.pacienteId },
       medico: { id: this.medicoId },
       fechaCita: this.fechaCita,
@@ -69,7 +68,6 @@ export class CitasComponent implements OnInit {
     };
 
     if (this.idCitaEdicion) {
-      // 🚀 MODO EDICIÓN: Llama al servicio de actualizar
       this.citaService.actualizarCita(this.idCitaEdicion, citaPayload).subscribe({
         next: () => {
           this.cargarCitas();
@@ -85,7 +83,6 @@ export class CitasComponent implements OnInit {
         }
       });
     } else {
-      // 🚀 MODO CREACIÓN: Llama al flujo que ya tenías
       this.citaService.crear(citaPayload).subscribe({
         next: () => {
           this.cargarCitas();
@@ -103,7 +100,6 @@ export class CitasComponent implements OnInit {
     }
   }
 
-  // 🌟 NUEVO MÉTODO: Carga los datos de la fila de la tabla directo al formulario superior
   seleccionarParaEditar(cita: CitaMedica): void {
     if (cita.estado === 'CANCELADA') {
       alert('No se puede modificar una cita que ya fue cancelada.');
@@ -112,7 +108,7 @@ export class CitasComponent implements OnInit {
     this.idCitaEdicion = cita.id || null;
     this.pacienteId = cita.paciente?.id || null;
     this.medicoId = cita.medico?.id || null;
-    this.fechaCita = cita.fechaCita ? cita.fechaCita.substring(0, 16) : ''; // Formatea la fecha para el input datetime-local
+    this.fechaCita = cita.fechaCita ? cita.fechaCita.substring(0, 16) : ''; 
     this.prioridadTriaje = cita.prioridadTriaje || 'MEDIA';
     this.motivo = cita.motivo || '';
   }
@@ -122,14 +118,13 @@ export class CitasComponent implements OnInit {
       this.citaService.cancelar(id).subscribe({
         next: () => {
           this.cargarCitas();
-          if (this.idCitaEdicion === id) this.limpiarForm(); // Por si la estabas editando justo antes
+          if (this.idCitaEdicion === id) this.limpiarForm(); 
         },
         error: (err: any) => console.error('Error al cancelar cita', err)
       });
     }
   }
 
-  // 🌟 MODIFICADO: Reinicia también el id de edición para volver a modo "Crear"
   limpiarForm(): void {
     this.idCitaEdicion = null;
     this.pacienteId = null;

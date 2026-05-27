@@ -12,13 +12,11 @@ import { CitaService, CitaMedica } from '../../core/services/cita.service';
 export class MedicoCitasComponent implements OnInit {
   private citaService = inject(CitaService);
 
-  // ID del médico logueado (Simulado para este avance, luego se extrae del JWT)
   medicoIdLogueado: number = 1; 
 
   citas: CitaMedica[] = [];
   citasDelDiaSeleccionado: CitaMedica[] = [];
   
-  // Lógica del Calendario
   diasDeLaSemana: string[] = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
   meses: string[] = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   
@@ -33,7 +31,6 @@ export class MedicoCitasComponent implements OnInit {
     this.cargarCitasMedico();
   }
 
-  // 🟢 CORREGIDO: Eliminamos la variable hardcodeada 'medicoIdLogueado'
   cargarCitasMedico(): void {
     this.citaService.listarMisCitas().subscribe({
       next: (data: CitaMedica[]) => {
@@ -51,12 +48,10 @@ export class MedicoCitasComponent implements OnInit {
     
     this.grillaDias = [];
 
-    // Rellenar espacios en blanco de la primera semana
     for (let i = 0; i < primerDiaMes; i++) {
       this.grillaDias.push(null);
     }
 
-    // Rellenar los días del mes
     for (let dia = 1; dia <= totalDiasMes; dia++) {
       this.grillaDias.push(dia);
     }
@@ -76,7 +71,6 @@ export class MedicoCitasComponent implements OnInit {
     this.generarCalendario();
   }
 
-  // Comprueba si un día específico de la cuadrícula tiene citas programadas
   tieneCita(dia: number | null): boolean {
     if (!dia) return false;
     const fechaStr = this.formatearFechaBusqueda(dia);
@@ -88,13 +82,11 @@ export class MedicoCitasComponent implements OnInit {
     this.diaSeleccionado = dia;
     const fechaStr = this.formatearFechaBusqueda(dia);
     
-    // Filtra las consultas correspondientes a la fecha seleccionada
     this.citasDelDiaSeleccionado = this.citas.filter(cita => 
       cita.fechaCita.toString().startsWith(fechaStr)
     );
   }
 
-  // Convierte el día numérico al formato ISO 'YYYY-MM-DD' esperado por los filtros
   private formatearFechaBusqueda(dia: number): string {
     const mesFormateado = (this.mesActual + 1).toString().padStart(2, '0');
     const diaFormateado = dia.toString().padStart(2, '0');

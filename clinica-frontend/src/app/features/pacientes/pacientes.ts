@@ -14,7 +14,6 @@ export class PacientesComponent implements OnInit {
 
   pacientes: Paciente[] = [];
   
-  // Variables de control de interfaz de usuario (UI)
   verInactivos: boolean = false;
   mostrarFiltros: boolean = false;
   mostrarMenuExportar: boolean = false;
@@ -22,7 +21,6 @@ export class PacientesComponent implements OnInit {
   esEdicion: boolean = false;
   mostrarHistorial: boolean = false;
 
-  // Objetos enlazados a los modales del formulario e historial
   nuevoPaciente: Paciente = this.limpiarForm();
   pacienteSeleccionadoHistorial: Paciente | null = null;
 
@@ -53,7 +51,6 @@ export class PacientesComponent implements OnInit {
     });
   }
 
-  // Filtra en caliente la tabla dependiendo si se presionó "Ver Inactivos" o "Ver Admitidos"
   get pacientesFiltrados(): Paciente[] {
     return this.pacientes.filter(p => p.activo === !this.verInactivos);
   }
@@ -96,7 +93,6 @@ export class PacientesComponent implements OnInit {
     this.mostrarModal = true;
   }
 
-  // Maneja la baja lógica o reactivación del paciente actualizando el estado 'activo'
   cambiarEstadoPaciente(paciente: Paciente): void {
     const nuevoEstado = !paciente.activo;
     const mensaje = nuevoEstado ? '¿Desea reactivar a este paciente?' : '¿Desea dar de baja a este paciente del sistema?';
