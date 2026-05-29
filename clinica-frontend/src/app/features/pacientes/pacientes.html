@@ -12,7 +12,8 @@
     
     <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto relative">
       <div class="relative flex-1 sm:flex-none">
-        <input type="text" placeholder="Buscar por DNI o Nombre..." class="w-full sm:w-48 pl-7 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-500 transition-all">
+        <!-- 🚀 CONECTADO: Ahora filtra en tiempo real por nombre o DNI usando ngModel -->
+        <input type="text" [(ngModel)]="filtroBusquedaPaciente" placeholder="Buscar por DNI o Nombre..." class="w-full sm:w-48 pl-7 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-500 transition-all">
         <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
       </div>
       
@@ -46,11 +47,13 @@
 
         @if (mostrarMenuExportar) {
           <div class="absolute right-0 mt-1 w-40 bg-white border border-slate-100 rounded-xl shadow-xl z-50 py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
-            <button (click)="mostrarMenuExportar = false" class="w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium transition-colors">
+            <!-- 🚀 CONECTADO: Llama a la función de exportar Excel -->
+            <button (click)="exportarExcel()" class="w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium transition-colors">
               <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
               <span>Descargar Excel</span>
             </button>
-            <button (click)="mostrarMenuExportar = false" class="w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium transition-colors">
+            <!-- 🚀 CONECTADO: Llama a la función de exportar PDF -->
+            <button (click)="exportarPDF()" class="w-full px-3 py-2 text-left hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium transition-colors">
               <span class="w-2 h-2 rounded-full bg-red-500"></span>
               <span>Descargar PDF</span>
             </button>
@@ -64,7 +67,8 @@
     <div class="bg-white border border-slate-200 rounded-xl p-4 mb-5 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-3 duration-200">
       <div class="space-y-1">
         <label class="text-[10px] font-bold text-slate-400 uppercase ml-0.5">Prioridad Triaje</label>
-        <select class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none cursor-pointer focus:border-blue-500 transition-all">
+        <!-- 🚀 CONECTADO: Amarrado a filtroTriaje -->
+        <select [(ngModel)]="filtroTriaje" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none cursor-pointer focus:border-blue-500 transition-all">
           <option value="">Todos los triajes</option>
           <option value="Estable">Estable</option>
           <option value="Observación">Observación</option>
@@ -73,7 +77,8 @@
       </div>
       <div class="space-y-1">
         <label class="text-[10px] font-bold text-slate-400 uppercase ml-0.5">Etapa - Rango de Edad</label>
-        <select class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none cursor-pointer focus:border-blue-500 transition-all">
+        <!-- 🚀 CONECTADO: Amarrado a filtroEtapa -->
+        <select [(ngModel)]="filtroEtapa" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none cursor-pointer focus:border-blue-500 transition-all">
           <option value="">Todas las etapas</option>
           <option value="adultos">Adultos </option>
           <option value="pediatria">Pediatría </option>
@@ -81,7 +86,8 @@
       </div>
       <div class="space-y-1">
         <label class="text-[10px] font-bold text-slate-400 uppercase ml-0.5">Unidad de Tiempo</label>
-        <select class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none cursor-pointer focus:border-blue-500 transition-all">
+        <!-- 🚀 CONECTADO: Amarrado a filtroUnidadTiempo -->
+        <select [(ngModel)]="filtroUnidadTiempo" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none cursor-pointer focus:border-blue-500 transition-all">
           <option value="">Años - Meses</option>
           <option value="Años">Solo registrados en Años</option>
           <option value="Meses">Solo Lactantes - Neonatales en meses</option>
@@ -176,6 +182,7 @@
     </div>
   </div>
 
+  <!-- MODAL DE FORMULARIO -->
   @if (mostrarModal) {
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 transition-all">
       <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -190,7 +197,6 @@
         <form #pacienteForm="ngForm" (ngSubmit)="pacienteForm.valid && agregarPaciente()" class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
           
           <div class="space-y-3">
-            
             <div class="space-y-1">
               <label class="text-[10px] font-bold text-slate-400 uppercase">Nombre Completo *</label>
               <input type="text" [(ngModel)]="nuevoPaciente.nombre" name="nombre" #pacienteNombre="ngModel" placeholder="Ej. Juan Pérez" required 
@@ -298,6 +304,7 @@
     </div>
   }
 
+  <!-- EXPEDIENTE CLÍNICO -->
   @if (mostrarHistorial && pacienteSeleccionadoHistorial) {
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4 transition-all">
       <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">

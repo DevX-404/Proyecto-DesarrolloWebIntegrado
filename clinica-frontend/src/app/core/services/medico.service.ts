@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Medico {
@@ -12,7 +12,6 @@ export interface Medico {
   consultorio: string;
   estado: string;
   activo: boolean;
-  // Campos analíticos auxiliares simulados para la UI profesional
   pacientesHoy?: number;
   proximaCita?: string;
   detalleEstado?: string;
@@ -39,5 +38,12 @@ export class MedicoService {
 
   eliminar(id: number): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${id}`);
+  }
+
+  filtrarMedicos(especialidad: string, estado: string): Observable<Medico[]> {
+    let params = new HttpParams();
+    if (especialidad) params = params.set('especialidad', especialidad);
+    if (estado) params = params.set('estado', estado);
+    return this.http.get<Medico[]>(`${this.apiUrl}/filtrar`, { params });
   }
 }

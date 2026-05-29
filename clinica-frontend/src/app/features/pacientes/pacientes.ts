@@ -13,13 +13,19 @@ export class PacientesComponent implements OnInit {
   private pacienteService = inject(PacienteService);
 
   pacientes: Paciente[] = [];
-  
+
   verInactivos: boolean = false;
   mostrarFiltros: boolean = false;
   mostrarMenuExportar: boolean = false;
   mostrarModal: boolean = false;
   esEdicion: boolean = false;
   mostrarHistorial: boolean = false;
+
+
+  filtroBusquedaPaciente: string = '';
+  filtroTriaje: string = '';
+  filtroEtapa: string = '';
+  filtroUnidadTiempo: string = '';
 
   nuevoPaciente: Paciente = this.limpiarForm();
   pacienteSeleccionadoHistorial: Paciente | null = null;
@@ -51,8 +57,33 @@ export class PacientesComponent implements OnInit {
     });
   }
 
-  get pacientesFiltrados(): Paciente[] {
-    return this.pacientes.filter(p => p.activo === !this.verInactivos);
+  // 🚀 PROPIEDAD REACTIVA: Filtra de manera combinada según todos los selectores de la pantalla
+  get pacientesFiltrados() {
+    return this.pacientes.filter(p => {
+      // 1. Filtro por Activo / Inactivo
+      const coincideEstado = p.activo === !this.verInactivos;
+      
+      // 2. Filtro por la barra de búsqueda (Nombre o DNI)
+      const coincideTexto = !this.filtroBusquedaPaciente.trim() || 
+        p.nombre.toLowerCase().includes(this.filtroBusquedaPaciente.toLowerCase()) ||
+        p.dni.includes(this.filtroBusquedaPaciente);
+        
+      // 3. Filtro por selector de Triaje
+      const coincideTriaje = !this.filtroTriaje || p.triaje === this.filtroTriaje;
+      
+      // 4. Filtro por selector de Etapa (Adultos >= 18 años o Pediatría < 18 años / meses)
+      let coincideEtapa = true;
+      if (this.filtroEtapa === 'adultos') {
+        coincideEtapa = p.tipoEdad === 'Años' && +p.edad >= 18;
+      } else if (this.filtroEtapa === 'pediatria') {
+        coincideEtapa = p.tipoEdad === 'Meses' || (p.tipoEdad === 'Años' && +p.edad < 18);
+      }
+      
+      // 5. Filtro por Unidad de tiempo (Años o Meses)
+      const coincideUnidad = !this.filtroUnidadTiempo || p.tipoEdad === this.filtroUnidadTiempo;
+
+      return coincideEstado && coincideTexto && coincideTriaje && coincideEtapa && coincideUnidad;
+    });
   }
 
   abrirFormulario(): void {
@@ -96,7 +127,7 @@ export class PacientesComponent implements OnInit {
   cambiarEstadoPaciente(paciente: Paciente): void {
     const nuevoEstado = !paciente.activo;
     const mensaje = nuevoEstado ? '¿Desea reactivar a este paciente?' : '¿Desea dar de baja a este paciente del sistema?';
-    
+
     if (confirm(mensaje)) {
       const pacienteModificado = { ...paciente, activo: nuevoEstado };
       if (paciente.id) {
@@ -116,5 +147,37 @@ export class PacientesComponent implements OnInit {
   cerrarHistorial(): void {
     this.mostrarHistorial = false;
     this.pacienteSeleccionadoHistorial = null;
+  }
+
+  exportarPDF() {
+    this.mostrarMenuExportar = false;
+    console.log('Generando reporte PDF...');
+
+    const tituloOriginal = document.title;
+    document.title = 'Reporte_Pacientes_MediQu';
+
+    window.print();
+
+    document.title = tituloOriginal;
+  }
+
+  exportarExcel() {
+    this.mostrarMenuExportar = false;
+    console.log('Exportando a formato Excel CSV...');
+
+    const cabeceras = 'Historial,Nombre,DNI,Edad,Genero,Triaje,Estado\n';
+
+    const filas = this.pacientesFiltrados.map(p => 
+      `"${p.historia || '—'}","${p.nombre}","${p.dni}","${p.edad} ${p.tipoEdad}","${p.genero}","${p.triaje}","${p.activo ? 'Activo' : 'Inactivo'}"`
+    ).join('\n');
+
+    const blob = new Blob([cabeceras + filas], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', 'Reporte_Admision_Pacientes_MediQu.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }

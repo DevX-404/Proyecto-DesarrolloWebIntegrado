@@ -78,4 +78,9 @@ public class MedicoService {
     public long contarMedicosActivos() {
         return medicoRepository.count();
     }
+
+    public List<Medico> filtrarMedicos(String esp, String est) {
+        throw new UnsupportedOperationException("Unimplemented method 'filtrarMedicos'");
+    }
+
 }

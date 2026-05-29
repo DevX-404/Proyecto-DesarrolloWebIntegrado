@@ -31,13 +31,13 @@ public class Medico {
     private Long id;
 
     @NotBlank(message = "El nombre completo es obligatorio")
-    private String nombre; // Recibe "Dr. Carlos Mendoza"
+    private String nombre;
 
     @NotBlank(message = "La matrícula es obligatoria")
     @Column(unique = true, length = 20)
-    private String matricula; // Reemplaza al viejo CMP para alinearse al HTML
+    private String matricula;
 
-    private String genero; // "M" o "F"
+    private String genero;
 
     @NotBlank(message = "La especialidad es obligatoria")
     private String especialidad;
@@ -47,7 +47,8 @@ public class Medico {
     @NotBlank(message = "El consultorio es obligatorio")
     private String consultorio;
 
-    private String estado; // "Activo", "En Consulta", "En Guardia", "De Baja"
+    @Builder.Default
+    private String estado = "Activo"; 
 
     @Builder.Default
     private Boolean activo = true;
@@ -61,5 +62,4 @@ public class Medico {
     @OneToOne(mappedBy = "medico", fetch = FetchType.LAZY)
     @JsonIgnore
     private Usuario usuario;
-
 }
