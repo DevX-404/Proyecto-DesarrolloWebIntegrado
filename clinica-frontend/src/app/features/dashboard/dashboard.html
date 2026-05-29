@@ -1,23 +1,19 @@
-<div class="p-4 min-h-screen bg-slate-50 transition-colors duration-300">
+<div class="p-4 min-h-screen bg-slate-50 transition-colors duration-300 text-xs">
   
   <div class="mb-5">
     <h1 class="text-base font-bold text-slate-800">Panel Principal</h1>
     <p class="text-[11px] text-slate-400">Métricas clave y actividad diaria de la clínica.</p>
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-    
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
     @for (tarjeta of tarjetas; track tarjeta.titulo) {
       <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-36">
-        
         <div class="text-center">
           <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{{ tarjeta.titulo }}</p>
         </div>
-
         <div class="text-center my-auto">
           <p class="text-3xl font-black text-slate-700 tracking-tight">{{ tarjeta.valor }}</p>
         </div>
-
         <div class="space-y-1.5">
           <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <div class="h-full rounded-full transition-all duration-500" 
@@ -30,17 +26,153 @@
             <span class="text-emerald-500 bg-emerald-50 px-1 rounded">{{ tarjeta.textoPorcentaje }}</span>
           </div>
         </div>
-
       </div>
     }
+  </div>
 
+  <div class="mb-5">
+    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 ml-0.5">Disponibilidad Médica en Tiempo Real</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      @for (tarjetaMed of tarjetasMedicos; track tarjetaMed.titulo) {
+        <div (click)="abrirModalMedicos(tarjetaMed)" 
+             [ngClass]="tarjetaMed.colorBg"
+             class="p-4 border rounded-xl shadow-sm hover:shadow-md cursor-pointer transition-all active:scale-98 flex items-center justify-between h-24 group">
+          <div class="space-y-1">
+            <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">{{ tarjetaMed.titulo }}</p>
+            <p class="text-3xl font-black tracking-tight" [ngClass]="tarjetaMed.colorTexto">{{ tarjetaMed.valor }}</p>
+          </div>
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold transition-transform group-hover:scale-110 shadow-sm" [ngClass]="tarjetaMed.badgeColor">
+            <span class="text-xs">●</span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="mb-6 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+      <div>
+        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Personal Médico</h2>
+        <p class="text-[10px] text-slate-400">Listado general de médicos registrados y su ubicación actual.</p>
+      </div>
+      <span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full font-bold text-[10px]">
+        {{ medicosListaGeneral.length }} Médicos
+      </span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-200">
+            <th class="px-5 py-3">Médico</th>
+            <th class="px-5 py-3">Especialidad</th>
+            <th class="px-5 py-3">Consultorio</th>
+            <th class="px-5 py-3 text-center">Estado</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @if (medicosListaGeneral.length === 0 && !cargando) {
+            <tr>
+              <td colspan="4" class="px-5 py-6 text-center text-slate-400 font-medium">
+                No se encontraron médicos registrados en el sistema.
+              </td>
+            </tr>
+          } @else {
+            @for (medico of medicosListaGeneral; track medico.id) {
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="px-5 py-3.5">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-xs shadow-sm shadow-black/5">
+                      {{ medico.nombre.charAt(0) }}
+                    </div>
+                    <div>
+                      <p class="font-bold text-slate-800 text-xs">{{ medico.nombre }}</p>
+                      <p class="text-[9px] text-slate-400 font-medium font-mono">ID: {{ medico.id || medico.matricula }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-5 py-3.5 text-slate-600 font-medium">
+                  {{ medico.especialidad }}
+                </td>
+                <td class="px-5 py-3.5">
+                  <span class="px-2 py-0.5 bg-slate-100 border border-slate-200 rounded-md font-mono font-black text-slate-600 text-[10px]">
+                    {{ medico.consultorio || 'No Asig.' }}
+                  </span>
+                </td>
+                <td class="px-5 py-3.5 text-center">
+                  <span class="px-2.5 py-0.5 rounded-full font-bold text-[9px] uppercase tracking-wide border inline-block min-w-[85px]"
+                        [ngClass]="{
+                          'bg-emerald-50 border-emerald-200 text-emerald-600': medico.estado === 'Activo',
+                          'bg-blue-50 border-blue-200 text-blue-600': medico.estado === 'En Consulta',
+                          'bg-cyan-50 border-cyan-200 text-cyan-600': medico.estado === 'En Guardia'
+                        }">
+                    {{ medico.estado }}
+                  </span>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
     <p class="text-slate-500 text-xs font-medium flex items-center gap-2">
-      <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+      <span class="w-2 h-2 rounded-full bg-blue-500 inline-block animate-pulse"></span>
       Integración de datos en tiempo real para MediQu. Gráficos detallados y reportes próximamente.
     </p>
   </div>
+
+  @if (mostrarModalMedicos) {
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        
+        <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center text-white" [ngClass]="colorModal">
+          <div>
+            <h3 class="font-black text-xs tracking-tight uppercase">{{ tituloModal }}</h3>
+            <p class="text-[9px] text-white/80 font-medium uppercase tracking-widest mt-0.5">MediQu Monitor Clínico</p>
+          </div>
+          <button (click)="cerrarModalMedicos()" class="text-white hover:text-slate-200 text-xl font-bold">&times;</button>
+        </div>
+
+        <div class="p-4 max-h-[60vh] overflow-y-auto space-y-2 bg-slate-50/50">
+          @if (medicosFiltradosModal.length === 0) {
+            <div class="p-6 text-center text-slate-400 font-medium">
+              No hay personal médico asignado a este estado en este momento.
+            </div>
+          } @else {
+            @for (medico of medicosFiltradosModal; track medico.id) {
+              <div class="p-3 bg-white border border-slate-200 rounded-xl shadow-sm flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-xs shadow-sm">
+                    {{ medico.nombre.charAt(0) }}
+                  </div>
+                  <div>
+                    <p class="font-bold text-slate-800 text-xs">{{ medico.nombre }}</p>
+                    <p class="text-[9px] text-slate-400 font-medium font-mono">{{ medico.especialidad }}</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="px-2 py-0.5 bg-slate-100 border border-slate-200 rounded-md font-mono font-black text-slate-600 text-[10px]">
+                    {{ medico.consultorio }}
+                  </span>
+                </div>
+              </div>
+            }
+          }
+        </div>
+
+        <div class="p-3 bg-slate-50 border-t border-slate-100 flex justify-end">
+          <button (click)="cerrarModalMedicos()" 
+                  [ngClass]="colorModal"
+                  class="px-4 py-1.5 text-white font-bold rounded-lg transition-all text-[11px] hover:brightness-95 active:scale-95 shadow-sm">
+            Cerrar Monitor
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
 
 </div>
